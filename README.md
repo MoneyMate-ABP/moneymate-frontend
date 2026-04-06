@@ -68,6 +68,17 @@ src/
 
 ---
 
+## Cara Install & Run
+```bash
+git clone git@github.com:MoneyMate-ABP/moneymate-frontend.git
+cd moneymate-frontend
+
+npm install
+npm run dev
+```
+
+---
+
 ## Halaman & Fitur Detail
 
 ### 1. Auth
