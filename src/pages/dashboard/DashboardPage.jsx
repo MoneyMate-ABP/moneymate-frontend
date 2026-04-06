@@ -206,6 +206,7 @@ function DashboardPage() {
               </section>
             )}
 
+
             {/* ── Recent Transactions ──────────────────── */}
             <section className="dashboard-section" id="recent-transactions">
               <div className="dashboard-section__header">
