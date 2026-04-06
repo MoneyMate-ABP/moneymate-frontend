@@ -2,7 +2,11 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import DashboardPage from "./pages/dashboard/DashboardPage.jsx";
+import BudgetListPage from "./pages/budget/BudgetListPage.jsx";
+import BudgetFormPage from "./pages/budget/BudgetFormPage.jsx";
+import DailyStatusPage from "./pages/budget/DailyStatusPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import AppLayout from "./components/AppLayout.jsx";
 import useAuthStore from "./store/authStore.js";
 
 /**
@@ -35,14 +39,22 @@ function App() {
           </PublicRoute>
         }
       />
+
+      {/* Protected routes — shared layout */}
       <Route
-        path="/"
         element={
           <ProtectedRoute>
-            <DashboardPage />
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/budgets" element={<BudgetListPage />} />
+        <Route path="/budgets/new" element={<BudgetFormPage />} />
+        <Route path="/budgets/:id/edit" element={<BudgetFormPage />} />
+        <Route path="/budgets/:id/status" element={<DailyStatusPage />} />
+      </Route>
+
       {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
