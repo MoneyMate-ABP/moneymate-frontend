@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import CurrencyInput from "./CurrencyInput";
 import { getCategories } from "../services/categoryService";
+import useAuthStore from "../store/authStore";
 
 /* ── Icons ──────────────────────────────────────────────── */
 const CloseIcon = () => (
@@ -36,6 +37,7 @@ const typeOptions = [
  */
 function TransactionFormModal({ isOpen, onClose, onSubmit, initialData, isSubmitting }) {
   const isEdit = !!initialData;
+  const userId = useAuthStore((s) => s.user?.id);
   const [categories, setCategories] = useState([]);
   const [geoLoading, setGeoLoading] = useState(false);
 
@@ -64,11 +66,11 @@ function TransactionFormModal({ isOpen, onClose, onSubmit, initialData, isSubmit
   // Load categories on open
   useEffect(() => {
     if (isOpen) {
-      getCategories()
+      getCategories(userId)
         .then((res) => setCategories(res.data || []))
         .catch(() => setCategories([]));
     }
-  }, [isOpen]);
+  }, [isOpen, userId]);
 
   // Reset form when modal opens / data changes
   useEffect(() => {
