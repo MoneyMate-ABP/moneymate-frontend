@@ -2,42 +2,82 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { logoutUser } from "../../services/authService";
-import { getDashboard, getRecentTransactions } from "../../services/dashboardService";
+import {
+  getDashboard,
+  getRecentTransactions,
+} from "../../services/dashboardService";
 import SummaryCard from "../../components/SummaryCard";
 import TransactionCard from "../../components/TransactionCard";
 import BudgetStatusBar from "../../components/BudgetStatusBar";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const WalletIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
     <line x1="1" y1="10" x2="23" y2="10" />
   </svg>
 );
 
 const IncomeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="12" y1="19" x2="12" y2="5" />
     <polyline points="5 12 12 5 19 12" />
   </svg>
 );
 
 const ExpenseIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="12" y1="5" x2="12" y2="19" />
     <polyline points="19 12 12 19 5 12" />
   </svg>
 );
 
 const BalanceIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="12" y1="1" x2="12" y2="23" />
     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
   </svg>
 );
 
 const LogoutIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" y1="12" x2="9" y2="12" />
@@ -53,6 +93,7 @@ function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch dashboard data on mount
   useEffect(() => {
@@ -67,7 +108,7 @@ function DashboardPage() {
         setDashboard(dashRes.data);
         // Take last 5 transactions (most recent first)
         const sorted = (txRes.data || []).sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+          (a, b) => new Date(b.created_at) - new Date(a.created_at),
         );
         setTransactions(sorted.slice(0, 5));
       } catch (err) {
@@ -155,29 +196,59 @@ function DashboardPage() {
               <p>Berikut ringkasan keuanganmu hari ini.</p>
             </section>
 
+            {/* ── Daily Summary (Hari Ini) ──────────────── */}
+            {budgets && (
+              <section className="dashboard-section" id="daily-summary-section" style={{ marginBottom: '24px' }}>
+                <div className="dashboard-section__header">
+                  <h3>📅 Track Hari Ini</h3>
+                </div>
+                <section className="dashboard-daily-summary" id="daily-summary-cards" style={{ marginTop: '16px' }}>
+                  <SummaryCard
+                    icon={<BalanceIcon />}
+                    label="Sisa Saldo Hari Ini"
+                    amount={budgets.remaining_today ?? 0}
+                    color="#00a8ff"
+                    delay={0}
+                  />
+                  <SummaryCard
+                    icon={<ExpenseIcon />}
+                    label="Pengeluaran Hari Ini"
+                    amount={budgets.spent_today ?? 0}
+                    color="#ff4757"
+                    delay={1}
+                  />
+                </section>
+              </section>
+            )}
+
             {/* ── Summary Cards ────────────────────────── */}
-            <section className="dashboard-summary" id="summary-cards">
-              <SummaryCard
-                icon={<BalanceIcon />}
-                label="Saldo"
-                amount={totals.balance}
-                color="#6c63ff"
-                delay={0}
-              />
-              <SummaryCard
-                icon={<IncomeIcon />}
-                label="Pemasukan"
-                amount={totals.income}
-                color="#2ecc71"
-                delay={1}
-              />
-              <SummaryCard
-                icon={<ExpenseIcon />}
-                label="Pengeluaran"
-                amount={totals.expense}
-                color="#ff4757"
-                delay={2}
-              />
+            <section className="dashboard-section" id="monthly-summary-section" style={{ marginBottom: '24px' }}>
+              <div className="dashboard-section__header">
+                <h3>📊 Track Bulan Ini</h3>
+              </div>
+              <section className="dashboard-summary" id="summary-cards" style={{ marginTop: '16px' }}>
+                <SummaryCard
+                  icon={<BalanceIcon />}
+                  label="Saldo"
+                  amount={totals.balance}
+                  color="#6c63ff"
+                  delay={0}
+                />
+                <SummaryCard
+                  icon={<IncomeIcon />}
+                  label="Pemasukan"
+                  amount={totals.income}
+                  color="#2ecc71"
+                  delay={1}
+                />
+                <SummaryCard
+                  icon={<ExpenseIcon />}
+                  label="Pengeluaran"
+                  amount={totals.expense}
+                  color="#ff4757"
+                  delay={2}
+                />
+              </section>
             </section>
 
             {/* ── Budget Status Section ─────────────────── */}
@@ -206,16 +277,25 @@ function DashboardPage() {
               </section>
             )}
 
-
             {/* ── Recent Transactions ──────────────────── */}
             <section className="dashboard-section" id="recent-transactions">
-              <div className="dashboard-section__header">
-                <h3>📋 Transaksi Terbaru</h3>
-                {transactions.length > 0 && (
-                  <span className="dashboard-section__count">
-                    {transactions.length} terakhir
-                  </span>
-                )}
+              <div className="dashboard-section__header" style={{ flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h3>📋 Transaksi Terbaru</h3>
+                  {transactions.length > 0 && (
+                    <span className="dashboard-section__count">
+                      {transactions.length} terakhir
+                    </span>
+                  )}
+                </div>
+                <div className="dashboard-quick-actions">
+                  <button className="btn btn-secondary btn-sm" onClick={() => navigate("/transactions")}>
+                    List Transaksi
+                  </button>
+                  <button className="btn btn-primary btn-sm" onClick={() => setIsModalOpen(true)}>
+                    + Tambah Transaksi
+                  </button>
+                </div>
               </div>
               {transactions.length === 0 ? (
                 <div className="dashboard-empty">
@@ -228,16 +308,45 @@ function DashboardPage() {
               ) : (
                 <div className="transaction-list">
                   {transactions.map((tx, i) => (
-                    <TransactionCard
-                      key={tx.id}
-                      transaction={tx}
-                      delay={i}
-                    />
+                    <TransactionCard key={tx.id} transaction={tx} delay={i} />
                   ))}
                 </div>
               )}
             </section>
           </>
+        )}
+
+        {/* ── Tambah Transaksi Modal ─────────────────── */}
+        {isModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Tambah Transaksi</h3>
+                <button className="btn-close" onClick={() => setIsModalOpen(false)}>✕</button>
+              </div>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Nominal</label>
+                  <input type="number" className="form-input" placeholder="Rp 0" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Tipe</label>
+                  <select className="form-input">
+                    <option value="expense">Pengeluaran</option>
+                    <option value="income">Pemasukan</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Keterangan</label>
+                  <input type="text" className="form-input" placeholder="Makan siang, belanja..." />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Batal</button>
+                <button className="btn btn-primary" onClick={() => setIsModalOpen(false)}>Simpan</button>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>

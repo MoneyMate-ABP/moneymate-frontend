@@ -8,12 +8,20 @@ const api = axios.create({
   },
 });
 
-// Request interceptor — auto-inject JWT token
+// Request interceptor — auto-inject JWT token (skip auth endpoints)
 api.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const url = config.url || "";
+    const isAuthEndpoint = url.includes("/api/auth/");
+
+    // Don't inject JWT for auth endpoints (login, register, google, logout)
+    // The google endpoint expects only the Firebase idToken in the body,
+    // sending a stale/invalid JWT header causes the backend to reject it
+    if (!isAuthEndpoint) {
+      const token = useAuthStore.getState().token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
