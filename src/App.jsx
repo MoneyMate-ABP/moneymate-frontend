@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import DashboardPage from "./pages/dashboard/DashboardPage.jsx";
+import CategoriesPage from "./pages/categories/CategoriesPage.jsx";
 import BudgetListPage from "./pages/budget/BudgetListPage.jsx";
 import BudgetFormPage from "./pages/budget/BudgetFormPage.jsx";
 import DailyStatusPage from "./pages/budget/DailyStatusPage.jsx";
@@ -55,6 +56,14 @@ function App() {
         <Route path="/budgets/:id/status" element={<DailyStatusPage />} />
       </Route>
 
+      <Route
+        path="/categories"
+        element={
+          <ProtectedRoute>
+            <CategoriesPage />
+          </ProtectedRoute>
+        }
+      />
       {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
