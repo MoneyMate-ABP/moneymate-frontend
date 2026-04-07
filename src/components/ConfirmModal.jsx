@@ -1,98 +1,86 @@
-import { useEffect } from "react";
-
 /**
- * ConfirmModal — confirmation dialog with overlay
- * 
+ * ConfirmModal — reusable confirmation dialog
+ *
  * Props:
- *   isOpen: boolean
- *   title: string
- *   message: string
- *   confirmText: string (default "Hapus")
- *   cancelText: string (default "Batal")
- *   onConfirm: () => void
- *   onCancel: () => void
- *   isLoading: boolean
- *   variant: 'danger' | 'warning' (default danger)
+ *   isOpen      — boolean
+ *   onClose     — () => void
+ *   onConfirm   — () => void
+ *   title       — modal title string
+ *   message     — main message (string or JSX)
+ *   warning     — small warning text below message
+ *   confirmText — confirm button label (default: "Hapus")
+ *   cancelText  — cancel button label (default: "Batal")
+ *   icon        — emoji or icon (default: "🗑️")
+ *   isSubmitting — boolean, loading state
+ *   variant     — "danger" | "warning" (default: "danger")
  */
-export default function ConfirmModal({
+
+const CloseIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+function ConfirmModal({
   isOpen,
+  onClose,
+  onConfirm,
   title = "Konfirmasi",
-  message,
+  message = "Apakah Anda yakin?",
+  warning,
   confirmText = "Hapus",
   cancelText = "Batal",
-  onConfirm,
-  onCancel,
-  isLoading = false,
+  icon = "🗑️",
+  isSubmitting = false,
   variant = "danger",
 }) {
-  // Close on ESC
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e) => {
-      if (e.key === "Escape") onCancel?.();
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [isOpen, onCancel]);
-
-  // Prevent body scroll
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal-dialog"
+        className="modal-content modal-content--sm"
         onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
       >
-        {/* Icon */}
-        <div className={`modal-icon modal-icon--${variant}`}>
-          {variant === "danger" ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3 6 5 6 21 6" />
-              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-              <path d="M10 11v6" /><path d="M14 11v6" />
-              <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-          )}
+        <div className="modal-header">
+          <h3>{title}</h3>
+          <button className="modal-close" onClick={onClose}>
+            <CloseIcon />
+          </button>
         </div>
 
-        <h3 id="modal-title" className="modal-title">{title}</h3>
-        {message && <p className="modal-message">{message}</p>}
+        <div className="delete-modal__body">
+          <div className="delete-modal__icon">{icon}</div>
+          <p>{message}</p>
+          {warning && <span className="delete-modal__warning">{warning}</span>}
+        </div>
 
-        <div className="modal-actions">
-          <button
-            className="btn-modal-cancel"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+        <div className="delete-modal__actions">
+          <button className="btn btn-ghost" onClick={onClose} type="button">
             {cancelText}
           </button>
           <button
-            className={`btn-modal-confirm btn-modal-confirm--${variant}`}
+            className={`btn ${variant === "danger" ? "btn-danger" : "btn-primary"}`}
             onClick={onConfirm}
-            disabled={isLoading}
+            disabled={isSubmitting}
+            id="confirm-action-btn"
+            type="button"
           >
-            {isLoading ? <span className="spinner" /> : confirmText}
+            {isSubmitting && <span className="spinner" />}
+            {confirmText}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+export default ConfirmModal;

@@ -2,9 +2,13 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import DashboardPage from "./pages/dashboard/DashboardPage.jsx";
-import TransactionsPage from "./pages/transactions/TransactionsPage.jsx";
-import TransactionFormPage from "./pages/transactions/TransactionFormPage.jsx";
-import TransactionDetailPage from "./pages/transactions/TransactionDetailPage.jsx";
+import CategoriesPage from "./pages/categories/CategoriesPage.jsx";
+import BudgetListPage from "./pages/budget/BudgetListPage.jsx";
+import BudgetFormPage from "./pages/budget/BudgetFormPage.jsx";
+import DailyStatusPage from "./pages/budget/DailyStatusPage.jsx";
+import TransactionList from "./pages/transactions/TransactionList.jsx";
+import TransactionForm from "./pages/transactions/TransactionForm.jsx";
+import TransactionDetail from "./pages/transactions/TransactionDetail.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import useAuthStore from "./store/authStore.js";
 
@@ -40,7 +44,7 @@ function App() {
         }
       />
 
-      {/* Protected routes */}
+      {/* Protected routes (without AppLayout) */}
       <Route
         path="/"
         element={
@@ -50,18 +54,61 @@ function App() {
         }
       />
       <Route
-        path="/transactions"
+        path="/budgets"
         element={
           <ProtectedRoute>
-            <TransactionsPage />
+            <BudgetListPage />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/transactions/new"
+        path="/budgets/new"
         element={
           <ProtectedRoute>
-            <TransactionFormPage />
+            <BudgetFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets/:id/edit"
+        element={
+          <ProtectedRoute>
+            <BudgetFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets/:id/status"
+        element={
+          <ProtectedRoute>
+            <DailyStatusPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/categories"
+        element={
+          <ProtectedRoute>
+            <CategoriesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── Transaction Routes ────────────────────────── */}
+      <Route
+        path="/transactions"
+        element={
+          <ProtectedRoute>
+            <TransactionList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/transactions/add"
+        element={
+          <ProtectedRoute>
+            <TransactionForm />
           </ProtectedRoute>
         }
       />
@@ -69,7 +116,7 @@ function App() {
         path="/transactions/:id"
         element={
           <ProtectedRoute>
-            <TransactionDetailPage />
+            <TransactionDetail />
           </ProtectedRoute>
         }
       />
@@ -77,7 +124,7 @@ function App() {
         path="/transactions/:id/edit"
         element={
           <ProtectedRoute>
-            <TransactionFormPage />
+            <TransactionForm />
           </ProtectedRoute>
         }
       />

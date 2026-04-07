@@ -1,75 +1,81 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useCallback } from "react";
 
 /**
- * CurrencyInput — formats value as Indonesian Rupiah (Rp 1.000.000)
- * 
+ * CurrencyInput — format Rp otomatis
+ *
  * Props:
- *   value: number (raw)
- *   onChange: (number) => void
- *   placeholder: string
- *   error: string
- *   id: string
+ *   value        — numeric value (number)
+ *   onChange     — (numericValue: number) => void
+ *   id           — HTML id
+ *   placeholder  — input placeholder
+ *   error        — boolean, show error border
+ *   disabled     — boolean
  */
-function formatRupiah(num) {
+function formatToRupiah(num) {
   if (!num && num !== 0) return "";
   return new Intl.NumberFormat("id-ID").format(num);
 }
 
-function parseRupiah(str) {
-  // Remove all non-digit chars
-  const raw = str.replace(/\D/g, "");
-  return raw === "" ? "" : parseInt(raw, 10);
+function parseFromRupiah(str) {
+  // Remove all non-digit characters
+  const digits = str.replace(/\D/g, "");
+  return digits ? parseInt(digits, 10) : 0;
 }
 
-export default function CurrencyInput({
+function CurrencyInput({
   value,
   onChange,
+  id,
   placeholder = "0",
   error,
-  id,
   disabled,
 }) {
-  const [displayValue, setDisplayValue] = useState(
-    value != null && value !== "" ? formatRupiah(value) : ""
-  );
-  const isComposing = useRef(false);
+  const [display, setDisplay] = useState(value ? formatToRupiah(value) : "");
 
-  // Sync external value changes
-  useEffect(() => {
-    if (value != null && value !== "") {
-      setDisplayValue(formatRupiah(value));
-    } else {
-      setDisplayValue("");
+  // Sync display when value changes externally
+  const handleFocus = useCallback(() => {
+    if (value) {
+      setDisplay(formatToRupiah(value));
     }
   }, [value]);
 
-  function handleChange(e) {
+  const handleChange = (e) => {
     const raw = e.target.value;
-    const parsed = parseRupiah(raw);
+    const numeric = parseFromRupiah(raw);
 
-    if (parsed === "") {
-      setDisplayValue("");
-      onChange("");
+    // Limit to reasonable amount (999 billion)
+    if (numeric > 999_999_999_999) return;
+
+    setDisplay(numeric ? formatToRupiah(numeric) : "");
+    onChange(numeric);
+  };
+
+  const handleBlur = () => {
+    if (value) {
+      setDisplay(formatToRupiah(value));
     } else {
-      setDisplayValue(formatRupiah(parsed));
-      onChange(parsed);
+      setDisplay("");
     }
-  }
+  };
 
   return (
-    <div className="currency-input-wrapper">
-      <span className="currency-input-prefix">Rp</span>
+    <div className={`currency-input ${error ? "currency-input--error" : ""}`}>
+      <span className="currency-input__prefix">Rp</span>
       <input
         id={id}
+        className="currency-input__field"
         type="text"
         inputMode="numeric"
-        className={`form-input currency-input${error ? " input-error" : ""}`}
-        value={displayValue}
-        onChange={handleChange}
         placeholder={placeholder}
+        value={display}
+        onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         disabled={disabled}
         autoComplete="off"
       />
     </div>
   );
 }
+
+export default CurrencyInput;

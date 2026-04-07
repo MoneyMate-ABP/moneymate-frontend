@@ -14,7 +14,7 @@ export async function getTransactions(params = {}) {
  */
 export async function getTransaction(id) {
   const res = await api.get(`/api/transactions/${id}`);
-  return res.data; // { data: {...} }
+  return res.data.data; // { data: { ... } }
 }
 
 /**
@@ -22,7 +22,7 @@ export async function getTransaction(id) {
  */
 export async function createTransaction(data) {
   const res = await api.post("/api/transactions", data);
-  return res.data;
+  return res.data; // { message, data: { ... } }
 }
 
 /**
@@ -30,7 +30,7 @@ export async function createTransaction(data) {
  */
 export async function updateTransaction(id, data) {
   const res = await api.put(`/api/transactions/${id}`, data);
-  return res.data;
+  return res.data; // { message, data: { ... } }
 }
 
 /**
@@ -38,5 +38,5 @@ export async function updateTransaction(id, data) {
  */
 export async function deleteTransaction(id) {
   const res = await api.delete(`/api/transactions/${id}`);
-  return res.data;
+  return res.data; // { message }
 }

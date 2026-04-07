@@ -1,39 +1,91 @@
 /**
- * CategoryBadge — colored chip for a category name
- * 
+ * CategoryBadge — chip warna per kategori
+ *
  * Props:
- *   name: string — category name
- *   size: 'sm' | 'md' (default md)
+ *   name — category name string
+ *   type — "expense" | "income" (optional, for color fallback)
  */
 
-const CATEGORY_COLORS = {
-  makanan: { bg: "rgba(255, 165, 2, 0.12)", border: "rgba(255, 165, 2, 0.3)", text: "#ffb833", emoji: "🍜" },
-  transportasi: { bg: "rgba(66, 133, 244, 0.12)", border: "rgba(66, 133, 244, 0.3)", text: "#6ba8f7", emoji: "🚗" },
-  hiburan: { bg: "rgba(156, 39, 176, 0.12)", border: "rgba(156, 39, 176, 0.3)", text: "#ce93d8", emoji: "🎮" },
-  belanja: { bg: "rgba(233, 30, 99, 0.12)", border: "rgba(233, 30, 99, 0.3)", text: "#f06292", emoji: "🛍️" },
-  kesehatan: { bg: "rgba(76, 175, 80, 0.12)", border: "rgba(76, 175, 80, 0.3)", text: "#81c784", emoji: "🏥" },
-  pendidikan: { bg: "rgba(3, 169, 244, 0.12)", border: "rgba(3, 169, 244, 0.3)", text: "#4fc3f7", emoji: "📚" },
-  lainnya: { bg: "rgba(255, 255, 255, 0.06)", border: "rgba(255, 255, 255, 0.15)", text: "rgba(240,240,245,0.6)", emoji: "📌" },
+const categoryColors = {
+  Makanan: {
+    bg: "rgba(255, 165, 2, 0.12)",
+    color: "#ffa502",
+    border: "rgba(255, 165, 2, 0.25)",
+    emoji: "🍔",
+  },
+  Transportasi: {
+    bg: "rgba(0, 168, 255, 0.12)",
+    color: "#00a8ff",
+    border: "rgba(0, 168, 255, 0.25)",
+    emoji: "🚗",
+  },
+  Hiburan: {
+    bg: "rgba(232, 67, 147, 0.12)",
+    color: "#e84393",
+    border: "rgba(232, 67, 147, 0.25)",
+    emoji: "🎬",
+  },
+  Lainnya: {
+    bg: "rgba(162, 155, 254, 0.12)",
+    color: "#a29bfe",
+    border: "rgba(162, 155, 254, 0.25)",
+    emoji: "📦",
+  },
+  Gaji: {
+    bg: "rgba(46, 204, 113, 0.12)",
+    color: "#2ecc71",
+    border: "rgba(46, 204, 113, 0.25)",
+    emoji: "💰",
+  },
+  Freelance: {
+    bg: "rgba(9, 132, 227, 0.12)",
+    color: "#0984e3",
+    border: "rgba(9, 132, 227, 0.25)",
+    emoji: "💻",
+  },
 };
 
-const DEFAULT_COLOR = { bg: "rgba(108, 99, 255, 0.12)", border: "rgba(108, 99, 255, 0.3)", text: "#a5a0ff", emoji: "💰" };
+const defaultExpense = {
+  bg: "rgba(255, 71, 87, 0.12)",
+  color: "#ff4757",
+  border: "rgba(255, 71, 87, 0.25)",
+  emoji: "💸",
+};
+const defaultIncome = {
+  bg: "rgba(46, 204, 113, 0.12)",
+  color: "#2ecc71",
+  border: "rgba(46, 204, 113, 0.25)",
+  emoji: "💵",
+};
+const defaultBoth = {
+  bg: "rgba(108, 99, 255, 0.12)",
+  color: "#6c63ff",
+  border: "rgba(108, 99, 255, 0.25)",
+  emoji: "🔄",
+};
 
-export default function CategoryBadge({ name, size = "md" }) {
-  if (!name) return null;
-  const key = name.toLowerCase();
-  const color = CATEGORY_COLORS[key] || DEFAULT_COLOR;
+function CategoryBadge({ name, type }) {
+  const config =
+    categoryColors[name] ||
+    (type === "income"
+      ? defaultIncome
+      : type === "expense"
+        ? defaultExpense
+        : defaultBoth);
 
   return (
     <span
-      className={`category-badge category-badge--${size}`}
+      className="category-badge"
       style={{
-        background: color.bg,
-        border: `1px solid ${color.border}`,
-        color: color.text,
+        background: config.bg,
+        color: config.color,
+        borderColor: config.border,
       }}
     >
-      <span className="category-badge__emoji">{color.emoji}</span>
-      {name}
+      <span className="category-badge__emoji">{config.emoji}</span>
+      {name || "Tanpa Kategori"}
     </span>
   );
 }
+
+export default CategoryBadge;
