@@ -1141,6 +1141,11 @@ a:hover {
   padding-right: 36px;
 }
 
+.form-select option {
+  color: #000;
+  background: #fff;
+}
+
 .btn-submit {
   margin-top: 8px;
 }
