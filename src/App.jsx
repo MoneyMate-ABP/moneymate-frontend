@@ -7,7 +7,6 @@ import BudgetListPage from "./pages/budget/BudgetListPage.jsx";
 import BudgetFormPage from "./pages/budget/BudgetFormPage.jsx";
 import DailyStatusPage from "./pages/budget/DailyStatusPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import AppLayout from "./components/AppLayout.jsx";
 import useAuthStore from "./store/authStore.js";
 
 /**
@@ -41,20 +40,47 @@ function App() {
         }
       />
 
-      {/* Protected routes — shared layout */}
+      {/* Protected routes (without AppLayout) */}
       <Route
+        path="/"
         element={
           <ProtectedRoute>
-            <AppLayout />
+            <DashboardPage />
           </ProtectedRoute>
         }
-      >
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/budgets" element={<BudgetListPage />} />
-        <Route path="/budgets/new" element={<BudgetFormPage />} />
-        <Route path="/budgets/:id/edit" element={<BudgetFormPage />} />
-        <Route path="/budgets/:id/status" element={<DailyStatusPage />} />
-      </Route>
+      />
+      <Route
+        path="/budgets"
+        element={
+          <ProtectedRoute>
+            <BudgetListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets/new"
+        element={
+          <ProtectedRoute>
+            <BudgetFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets/:id/edit"
+        element={
+          <ProtectedRoute>
+            <BudgetFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets/:id/status"
+        element={
+          <ProtectedRoute>
+            <DailyStatusPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/categories"
