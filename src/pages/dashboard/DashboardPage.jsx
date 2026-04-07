@@ -53,6 +53,7 @@ function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch dashboard data on mount
   useEffect(() => {
@@ -180,6 +181,26 @@ function DashboardPage() {
               />
             </section>
 
+            {/* ── Daily Summary (Hari Ini) ──────────────── */}
+            {budgets && (
+              <section className="dashboard-daily-summary" id="daily-summary-cards">
+                <SummaryCard
+                  icon={<BalanceIcon />}
+                  label="Sisa Saldo Hari Ini"
+                  amount={budgets.remaining_today ?? 0}
+                  color="#00a8ff"
+                  delay={0}
+                />
+                <SummaryCard
+                  icon={<ExpenseIcon />}
+                  label="Pengeluaran Hari Ini"
+                  amount={budgets.spent_today ?? 0}
+                  color="#ff4757"
+                  delay={1}
+                />
+              </section>
+            )}
+
             {/* ── Budget Status Section ─────────────────── */}
             {budgetStatuses.length > 0 && (
               <section className="dashboard-section" id="budget-status">
@@ -208,13 +229,23 @@ function DashboardPage() {
 
             {/* ── Recent Transactions ──────────────────── */}
             <section className="dashboard-section" id="recent-transactions">
-              <div className="dashboard-section__header">
-                <h3>📋 Transaksi Terbaru</h3>
-                {transactions.length > 0 && (
-                  <span className="dashboard-section__count">
-                    {transactions.length} terakhir
-                  </span>
-                )}
+              <div className="dashboard-section__header" style={{ flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h3>📋 Transaksi Terbaru</h3>
+                  {transactions.length > 0 && (
+                    <span className="dashboard-section__count">
+                      {transactions.length} terakhir
+                    </span>
+                  )}
+                </div>
+                <div className="dashboard-quick-actions">
+                  <button className="btn btn-secondary btn-sm" onClick={() => navigate("/transactions")}>
+                    List Transaksi
+                  </button>
+                  <button className="btn btn-primary btn-sm" onClick={() => setIsModalOpen(true)}>
+                    + Tambah Transaksi
+                  </button>
+                </div>
               </div>
               {transactions.length === 0 ? (
                 <div className="dashboard-empty">
@@ -237,6 +268,39 @@ function DashboardPage() {
               )}
             </section>
           </>
+        )}
+
+        {/* ── Tambah Transaksi Modal ─────────────────── */}
+        {isModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Tambah Transaksi</h3>
+                <button className="btn-close" onClick={() => setIsModalOpen(false)}>✕</button>
+              </div>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Nominal</label>
+                  <input type="number" className="form-input" placeholder="Rp 0" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Tipe</label>
+                  <select className="form-input">
+                    <option value="expense">Pengeluaran</option>
+                    <option value="income">Pemasukan</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Keterangan</label>
+                  <input type="text" className="form-input" placeholder="Makan siang, belanja..." />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Batal</button>
+                <button className="btn btn-primary" onClick={() => setIsModalOpen(false)}>Simpan</button>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>
