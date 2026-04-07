@@ -3,6 +3,9 @@ import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import DashboardPage from "./pages/dashboard/DashboardPage.jsx";
 import CategoriesPage from "./pages/categories/CategoriesPage.jsx";
+import BudgetListPage from "./pages/budget/BudgetListPage.jsx";
+import BudgetFormPage from "./pages/budget/BudgetFormPage.jsx";
+import DailyStatusPage from "./pages/budget/DailyStatusPage.jsx";
 import TransactionList from "./pages/transactions/TransactionList.jsx";
 import TransactionForm from "./pages/transactions/TransactionForm.jsx";
 import TransactionDetail from "./pages/transactions/TransactionDetail.jsx";
@@ -39,6 +42,8 @@ function App() {
           </PublicRoute>
         }
       />
+
+      {/* Protected routes (without AppLayout) */}
       <Route
         path="/"
         element={
@@ -47,6 +52,39 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/budgets"
+        element={
+          <ProtectedRoute>
+            <BudgetListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets/new"
+        element={
+          <ProtectedRoute>
+            <BudgetFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets/:id/edit"
+        element={
+          <ProtectedRoute>
+            <BudgetFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets/:id/status"
+        element={
+          <ProtectedRoute>
+            <DailyStatusPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/categories"
         element={

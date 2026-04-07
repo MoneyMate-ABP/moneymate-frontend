@@ -21,7 +21,10 @@ export async function getRecentTransactions() {
  */
 export async function getBudgetDailyStatus(budgetPeriodId, date) {
   const params = date ? { date } : {};
-  const res = await api.get(`/api/budget-periods/${budgetPeriodId}/daily-status`, { params });
+  const res = await api.get(
+    `/api/budget-periods/${budgetPeriodId}/daily-status`,
+    { params },
+  );
   return res.data; // { data: { date, base, carry_over, effective_budget, total_spent, remaining, is_weekend } }
 }
 
