@@ -91,7 +91,7 @@ function TransactionForm() {
       setPageLoading(true);
       setFetchError("");
       try {
-        const catRes = await getCategories();
+        const catRes = await getCategories(user?.id);
         setCategories(catRes.data || []);
 
         if (isEdit) {
@@ -101,20 +101,26 @@ function TransactionForm() {
             amount: tx.amount || 0,
             type: tx.type || "expense",
             category_id: tx.category_id ? String(tx.category_id) : "",
-            date: tx.date ? new Date(tx.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+            date: tx.date
+              ? new Date(tx.date).toISOString().split("T")[0]
+              : new Date().toISOString().split("T")[0],
             note: tx.note || "",
             latitude: tx.latitude ? String(tx.latitude) : "",
             longitude: tx.longitude ? String(tx.longitude) : "",
           });
         }
       } catch {
-        setFetchError(isEdit ? "Gagal memuat data transaksi." : "Gagal memuat daftar kategori.");
+        setFetchError(
+          isEdit
+            ? "Gagal memuat data transaksi."
+            : "Gagal memuat daftar kategori.",
+        );
       } finally {
         setPageLoading(false);
       }
     }
     loadData();
-  }, [id, isEdit, reset]);
+  }, [id, isEdit, reset, user?.id]);
 
   // Filter categories by type
   const filteredCategories = categories.filter(

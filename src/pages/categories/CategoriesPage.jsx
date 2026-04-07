@@ -254,7 +254,7 @@ function CategoriesPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await getCategories();
+      const res = await getCategories(user?.id);
       setCategories(res.data || []);
     } catch (err) {
       setError("Gagal memuat data kategori.");
@@ -262,7 +262,7 @@ function CategoriesPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchCategories();

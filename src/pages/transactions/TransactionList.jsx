@@ -157,10 +157,10 @@ function TransactionList() {
     try {
       const [txRes, catRes] = await Promise.all([
         getTransactions(),
-        getCategories(),
+        getCategories(user?.id),
       ]);
       const sorted = (txRes.data || []).sort(
-        (a, b) => new Date(b.date) - new Date(a.date)
+        (a, b) => new Date(b.date) - new Date(a.date),
       );
       setTransactions(sorted);
       setCategories(catRes.data || []);
@@ -169,7 +169,7 @@ function TransactionList() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchData();

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useBudgetStore from "../../store/budgetStore";
+import useAuthStore from "../../store/authStore";
 import { getCategories } from "../../services/categoryService";
 import {
   getWorkingDays,
@@ -12,6 +13,7 @@ function BudgetFormPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
+  const userId = useAuthStore((s) => s.user?.id);
 
   const { periods, createPeriod, updatePeriod, fetchPeriods } =
     useBudgetStore();
@@ -30,10 +32,10 @@ function BudgetFormPage() {
 
   // Load categories
   useEffect(() => {
-    getCategories()
+    getCategories(userId)
       .then((res) => setCategories(res.data))
       .catch(() => {});
-  }, []);
+  }, [userId]);
 
   // If editing, populate form with existing period data
   useEffect(() => {

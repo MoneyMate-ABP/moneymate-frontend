@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
+import useAuthStore from "../../store/authStore";
 import {
   getTransaction,
   createTransaction,
@@ -19,6 +20,7 @@ export default function TransactionFormPage() {
   const navigate = useNavigate();
   const { id } = useParams(); // undefined in create mode
   const isEdit = !!id;
+  const userId = useAuthStore((s) => s.user?.id);
 
   const [categories, setCategories] = useState([]);
   const [pageLoading, setPageLoading] = useState(isEdit);
@@ -44,10 +46,10 @@ export default function TransactionFormPage() {
 
   // Load categories
   useEffect(() => {
-    getCategories()
+    getCategories(userId)
       .then((res) => setCategories(res.data || []))
       .catch(() => {});
-  }, []);
+  }, [userId]);
 
   // Load existing transaction if editing
   useEffect(() => {

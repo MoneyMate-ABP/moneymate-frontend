@@ -328,7 +328,7 @@ function TransactionsPage() {
     try {
       const [txRes, catRes] = await Promise.all([
         getTransactions(),
-        getCategories(),
+        getCategories(user?.id),
       ]);
       const sorted = (txRes.data || []).sort(
         (a, b) => new Date(b.date) - new Date(a.date),
@@ -341,7 +341,7 @@ function TransactionsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchData();
