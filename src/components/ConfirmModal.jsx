@@ -1,63 +1,81 @@
-import { useState } from "react";
-
 /**
- * A reusable confirmation modal with custom message.
+ * ConfirmModal — reusable confirmation dialog
+ *
  * Props:
- *  - open: boolean
- *  - title: string
- *  - message: string
- *  - confirmLabel: string (default "Hapus")
- *  - onConfirm: () => void
- *  - onCancel: () => void
- *  - danger: boolean (default true) — red confirm button
+ *   isOpen      — boolean
+ *   onClose     — () => void
+ *   onConfirm   — () => void
+ *   title       — modal title string
+ *   message     — main message (string or JSX)
+ *   warning     — small warning text below message
+ *   confirmText — confirm button label (default: "Hapus")
+ *   cancelText  — cancel button label (default: "Batal")
+ *   icon        — emoji or icon (default: "🗑️")
+ *   isSubmitting — boolean, loading state
+ *   variant     — "danger" | "warning" (default: "danger")
  */
+
+const CloseIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
 function ConfirmModal({
-  open,
-  title = "Konfirmasi",
-  message = "Apakah kamu yakin?",
-  confirmLabel = "Hapus",
+  isOpen,
+  onClose,
   onConfirm,
-  onCancel,
-  danger = true,
+  title = "Konfirmasi",
+  message = "Apakah Anda yakin?",
+  warning,
+  confirmText = "Hapus",
+  cancelText = "Batal",
+  icon = "🗑️",
+  isSubmitting = false,
+  variant = "danger",
 }) {
-  if (!open) return null;
+  if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal-card"
+        className="modal-content modal-content--sm"
         onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        id="confirm-modal"
       >
-        <div className="modal-icon">
-          {danger ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              <line x1="12" y1="9" x2="12" y2="13" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-          )}
+        <div className="modal-header">
+          <h3>{title}</h3>
+          <button className="modal-close" onClick={onClose}>
+            <CloseIcon />
+          </button>
         </div>
-        <h3 className="modal-title">{title}</h3>
-        <p className="modal-message">{message}</p>
-        <div className="modal-actions">
-          <button className="btn btn-modal-cancel" onClick={onCancel} id="btn-modal-cancel">
-            Batal
+
+        <div className="delete-modal__body">
+          <div className="delete-modal__icon">{icon}</div>
+          <p>{message}</p>
+          {warning && <span className="delete-modal__warning">{warning}</span>}
+        </div>
+
+        <div className="delete-modal__actions">
+          <button className="btn btn-ghost" onClick={onClose} type="button">
+            {cancelText}
           </button>
           <button
-            className={`btn ${danger ? "btn-modal-danger" : "btn-primary"}`}
+            className={`btn ${variant === "danger" ? "btn-danger" : "btn-primary"}`}
             onClick={onConfirm}
-            id="btn-modal-confirm"
+            disabled={isSubmitting}
+            id="confirm-action-btn"
+            type="button"
           >
-            {confirmLabel}
+            {isSubmitting && <span className="spinner" />}
+            {confirmText}
           </button>
         </div>
       </div>
