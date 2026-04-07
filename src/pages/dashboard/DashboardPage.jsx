@@ -156,50 +156,60 @@ function DashboardPage() {
               <p>Berikut ringkasan keuanganmu hari ini.</p>
             </section>
 
-            {/* ── Summary Cards ────────────────────────── */}
-            <section className="dashboard-summary" id="summary-cards">
-              <SummaryCard
-                icon={<BalanceIcon />}
-                label="Saldo"
-                amount={totals.balance}
-                color="#6c63ff"
-                delay={0}
-              />
-              <SummaryCard
-                icon={<IncomeIcon />}
-                label="Pemasukan"
-                amount={totals.income}
-                color="#2ecc71"
-                delay={1}
-              />
-              <SummaryCard
-                icon={<ExpenseIcon />}
-                label="Pengeluaran"
-                amount={totals.expense}
-                color="#ff4757"
-                delay={2}
-              />
-            </section>
-
             {/* ── Daily Summary (Hari Ini) ──────────────── */}
             {budgets && (
-              <section className="dashboard-daily-summary" id="daily-summary-cards">
+              <section className="dashboard-section" id="daily-summary-section" style={{ marginBottom: '24px' }}>
+                <div className="dashboard-section__header">
+                  <h3>📅 Track Hari Ini</h3>
+                </div>
+                <section className="dashboard-daily-summary" id="daily-summary-cards" style={{ marginTop: '16px' }}>
+                  <SummaryCard
+                    icon={<BalanceIcon />}
+                    label="Sisa Saldo Hari Ini"
+                    amount={budgets.remaining_today ?? 0}
+                    color="#00a8ff"
+                    delay={0}
+                  />
+                  <SummaryCard
+                    icon={<ExpenseIcon />}
+                    label="Pengeluaran Hari Ini"
+                    amount={budgets.spent_today ?? 0}
+                    color="#ff4757"
+                    delay={1}
+                  />
+                </section>
+              </section>
+            )}
+
+            {/* ── Summary Cards ────────────────────────── */}
+            <section className="dashboard-section" id="monthly-summary-section" style={{ marginBottom: '24px' }}>
+              <div className="dashboard-section__header">
+                <h3>📊 Track Bulan Ini</h3>
+              </div>
+              <section className="dashboard-summary" id="summary-cards" style={{ marginTop: '16px' }}>
                 <SummaryCard
                   icon={<BalanceIcon />}
-                  label="Sisa Saldo Hari Ini"
-                  amount={budgets.remaining_today ?? 0}
-                  color="#00a8ff"
+                  label="Saldo"
+                  amount={totals.balance}
+                  color="#6c63ff"
                   delay={0}
                 />
                 <SummaryCard
-                  icon={<ExpenseIcon />}
-                  label="Pengeluaran Hari Ini"
-                  amount={budgets.spent_today ?? 0}
-                  color="#ff4757"
+                  icon={<IncomeIcon />}
+                  label="Pemasukan"
+                  amount={totals.income}
+                  color="#2ecc71"
                   delay={1}
                 />
+                <SummaryCard
+                  icon={<ExpenseIcon />}
+                  label="Pengeluaran"
+                  amount={totals.expense}
+                  color="#ff4757"
+                  delay={2}
+                />
               </section>
-            )}
+            </section>
 
             {/* ── Budget Status Section ─────────────────── */}
             {budgetStatuses.length > 0 && (
