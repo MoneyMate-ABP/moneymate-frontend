@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { logoutUser } from "../../services/authService";
+import { getCategories } from "../../services/categoryService";
 import {
   getDashboard,
   getRecentTransactions,
@@ -94,6 +95,11 @@ function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [quickCategories, setQuickCategories] = useState([]);
+  const [quickCategoryLoading, setQuickCategoryLoading] = useState(false);
+  const [quickCategoryError, setQuickCategoryError] = useState("");
+  const [quickType, setQuickType] = useState("expense");
+  const [quickCategoryId, setQuickCategoryId] = useState("");
 
   // Fetch dashboard data on mount
   useEffect(() => {
@@ -120,6 +126,58 @@ function DashboardPage() {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    let mounted = true;
+
+    async function fetchQuickCategories() {
+      setQuickCategoryLoading(true);
+      setQuickCategoryError("");
+      try {
+        const res = await getCategories(user?.id);
+        if (mounted) {
+          setQuickCategories(res.data || []);
+        }
+      } catch {
+        if (mounted) {
+          setQuickCategories([]);
+          setQuickCategoryError("Gagal memuat kategori.");
+        }
+      } finally {
+        if (mounted) {
+          setQuickCategoryLoading(false);
+        }
+      }
+    }
+
+    fetchQuickCategories();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isModalOpen, user?.id]);
+
+  const quickFilteredCategories = useMemo(
+    () =>
+      quickCategories.filter(
+        (cat) => cat.type === quickType || cat.type === "both",
+      ),
+    [quickCategories, quickType],
+  );
+
+  useEffect(() => {
+    if (!quickCategoryId) return;
+
+    const isCategoryValid = quickFilteredCategories.some(
+      (cat) => String(cat.id) === String(quickCategoryId),
+    );
+
+    if (!isCategoryValid) {
+      setQuickCategoryId("");
+    }
+  }, [quickFilteredCategories, quickCategoryId]);
 
   const handleLogout = async () => {
     try {
@@ -198,11 +256,19 @@ function DashboardPage() {
 
             {/* ── Daily Summary (Hari Ini) ──────────────── */}
             {budgets && (
-              <section className="dashboard-section" id="daily-summary-section" style={{ marginBottom: '24px' }}>
+              <section
+                className="dashboard-section"
+                id="daily-summary-section"
+                style={{ marginBottom: "24px" }}
+              >
                 <div className="dashboard-section__header">
                   <h3>📅 Track Hari Ini</h3>
                 </div>
-                <section className="dashboard-daily-summary" id="daily-summary-cards" style={{ marginTop: '16px' }}>
+                <section
+                  className="dashboard-daily-summary"
+                  id="daily-summary-cards"
+                  style={{ marginTop: "16px" }}
+                >
                   <SummaryCard
                     icon={<BalanceIcon />}
                     label="Sisa Saldo Hari Ini"
@@ -222,11 +288,19 @@ function DashboardPage() {
             )}
 
             {/* ── Summary Cards ────────────────────────── */}
-            <section className="dashboard-section" id="monthly-summary-section" style={{ marginBottom: '24px' }}>
+            <section
+              className="dashboard-section"
+              id="monthly-summary-section"
+              style={{ marginBottom: "24px" }}
+            >
               <div className="dashboard-section__header">
                 <h3>📊 Track Bulan Ini</h3>
               </div>
-              <section className="dashboard-summary" id="summary-cards" style={{ marginTop: '16px' }}>
+              <section
+                className="dashboard-summary"
+                id="summary-cards"
+                style={{ marginTop: "16px" }}
+              >
                 <SummaryCard
                   icon={<BalanceIcon />}
                   label="Saldo"
@@ -279,8 +353,13 @@ function DashboardPage() {
 
             {/* ── Recent Transactions ──────────────────── */}
             <section className="dashboard-section" id="recent-transactions">
-              <div className="dashboard-section__header" style={{ flexWrap: 'wrap', gap: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div
+                className="dashboard-section__header"
+                style={{ flexWrap: "wrap", gap: "16px" }}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                >
                   <h3>📋 Transaksi Terbaru</h3>
                   {transactions.length > 0 && (
                     <span className="dashboard-section__count">
@@ -289,10 +368,16 @@ function DashboardPage() {
                   )}
                 </div>
                 <div className="dashboard-quick-actions">
-                  <button className="btn btn-secondary btn-sm" onClick={() => navigate("/transactions")}>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => navigate("/transactions")}
+                  >
                     List Transaksi
                   </button>
-                  <button className="btn btn-primary btn-sm" onClick={() => setIsModalOpen(true)}>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => setIsModalOpen(true)}
+                  >
                     + Tambah Transaksi
                   </button>
                 </div>
@@ -322,28 +407,82 @@ function DashboardPage() {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Tambah Transaksi</h3>
-                <button className="btn-close" onClick={() => setIsModalOpen(false)}>✕</button>
+                <button
+                  className="btn-close"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  ✕
+                </button>
               </div>
               <div className="modal-body">
                 <div className="form-group">
                   <label className="form-label">Nominal</label>
-                  <input type="number" className="form-input" placeholder="Rp 0" />
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="Rp 0"
+                  />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Tipe</label>
-                  <select className="form-input">
+                  <select
+                    className="form-input"
+                    value={quickType}
+                    onChange={(e) => setQuickType(e.target.value)}
+                  >
                     <option value="expense">Pengeluaran</option>
                     <option value="income">Pemasukan</option>
                   </select>
                 </div>
                 <div className="form-group">
+                  <label className="form-label">Kategori</label>
+                  <select
+                    className="form-input"
+                    value={quickCategoryId}
+                    onChange={(e) => setQuickCategoryId(e.target.value)}
+                    disabled={quickCategoryLoading || !!quickCategoryError}
+                  >
+                    <option value="" disabled>
+                      {quickCategoryLoading
+                        ? "Memuat kategori..."
+                        : quickCategoryError
+                          ? "Kategori gagal dimuat"
+                          : quickFilteredCategories.length === 0
+                            ? "Belum ada kategori untuk tipe ini"
+                            : "Pilih kategori"}
+                    </option>
+                    {quickFilteredCategories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  {quickCategoryError && (
+                    <span className="form-error">{quickCategoryError}</span>
+                  )}
+                </div>
+                <div className="form-group">
                   <label className="form-label">Keterangan</label>
-                  <input type="text" className="form-input" placeholder="Makan siang, belanja..." />
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Makan siang, belanja..."
+                  />
                 </div>
               </div>
               <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Batal</button>
-                <button className="btn btn-primary" onClick={() => setIsModalOpen(false)}>Simpan</button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Batal
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Simpan
+                </button>
               </div>
             </div>
           </div>
