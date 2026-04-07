@@ -68,6 +68,22 @@ const MapPinIcon = () => (
     <circle cx="12" cy="10" r="3" />
   </svg>
 );
+const FilterIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </svg>
+);
+const ChevronDownIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+const CloseIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
 
 /* ── Helpers ────────────────────────────────────────────── */
 const formatCurrency = (amount) =>
@@ -104,12 +120,26 @@ function TransactionList() {
   const [deletingTx, setDeletingTx] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Filters
+  // Applied filters (active on the list)
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Temp filters inside modal (staged, not yet applied)
+  const [tempType, setTempType] = useState("all");
+  const [tempCategory, setTempCategory] = useState("all");
+  const [tempDateFrom, setTempDateFrom] = useState("");
+  const [tempDateTo, setTempDateTo] = useState("");
+
+  // Filter modal
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+
+  // Accordion open states
+  const [accordionDate, setAccordionDate] = useState(true);
+  const [accordionType, setAccordionType] = useState(true);
+  const [accordionCategory, setAccordionCategory] = useState(true);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -170,6 +200,31 @@ function TransactionList() {
     }
   };
 
+  // Filter Modal handlers
+  const openFilterModal = () => {
+    // Sync temp values with current applied filters
+    setTempType(filterType);
+    setTempCategory(filterCategory);
+    setTempDateFrom(filterDateFrom);
+    setTempDateTo(filterDateTo);
+    setFilterModalOpen(true);
+  };
+
+  const applyFilters = () => {
+    setFilterType(tempType);
+    setFilterCategory(tempCategory);
+    setFilterDateFrom(tempDateFrom);
+    setFilterDateTo(tempDateTo);
+    setFilterModalOpen(false);
+  };
+
+  const resetFilters = () => {
+    setTempType("all");
+    setTempCategory("all");
+    setTempDateFrom("");
+    setTempDateTo("");
+  };
+
   // Filtering
   const filtered = transactions.filter((tx) => {
     if (filterType !== "all" && tx.type !== filterType) return false;
@@ -200,8 +255,12 @@ function TransactionList() {
 
   const today = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
-  const clearFilters = () => { setFilterType("all"); setFilterCategory("all"); setFilterDateFrom(""); setFilterDateTo(""); setSearchQuery(""); };
-  const hasActiveFilters = filterType !== "all" || filterCategory !== "all" || filterDateFrom || filterDateTo || searchQuery;
+  const hasActiveFilters = filterType !== "all" || filterCategory !== "all" || filterDateFrom || filterDateTo;
+  const activeFilterCount = [
+    filterType !== "all",
+    filterCategory !== "all",
+    filterDateFrom || filterDateTo,
+  ].filter(Boolean).length;
 
   return (
     <div className="dashboard-layout">
@@ -280,7 +339,7 @@ function TransactionList() {
               </div>
             </div>
 
-            {/* ── Toolbar ──────────────────────────────── */}
+            {/* ── Toolbar (Search + Filter button + Add) ── */}
             <div className="tx-toolbar" id="tx-toolbar">
               <div className="tx-toolbar__search">
                 <SearchIcon />
@@ -293,56 +352,48 @@ function TransactionList() {
                   id="search-tx-input"
                 />
               </div>
+              <button
+                className={`btn tx-toolbar__filter ${hasActiveFilters ? "tx-toolbar__filter--active" : ""}`}
+                onClick={openFilterModal}
+                id="open-filter-modal-btn"
+              >
+                <FilterIcon />
+                <span>Filter</span>
+                {activeFilterCount > 0 && (
+                  <span className="tx-toolbar__filter-badge">{activeFilterCount}</span>
+                )}
+              </button>
               <Link to="/transactions/add" className="btn btn-primary tx-toolbar__add" id="add-tx-btn">
                 <PlusIcon /><span>Tambah</span>
               </Link>
             </div>
 
-            {/* ── Filters ──────────────────────────────── */}
-            <div className="tx-filters" id="tx-filters">
-              <div className="tx-filters__group">
-                <label className="tx-filters__label">Tipe</label>
-                <div className="tx-filters__chips">
-                  {["all", "income", "expense"].map((t) => (
-                    <button
-                      key={t}
-                      className={`category-filter-chip ${filterType === t ? "active" : ""}`}
-                      onClick={() => setFilterType(t)}
-                      id={`filter-type-${t}`}
-                    >
-                      {t === "all" ? "Semua" : t === "income" ? "Pemasukan" : "Pengeluaran"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="tx-filters__group">
-                <label className="tx-filters__label">Kategori</label>
-                <select
-                  className="form-input form-select form-select--sm"
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  id="filter-category"
-                >
-                  <option value="all">Semua Kategori</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={String(c.id)}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="tx-filters__group">
-                <label className="tx-filters__label">Tanggal</label>
-                <div className="tx-filters__date-range">
-                  <input className="form-input form-input--sm" type="date" value={filterDateFrom} onChange={(e) => setFilterDateFrom(e.target.value)} id="filter-date-from" />
-                  <span className="tx-filters__separator">—</span>
-                  <input className="form-input form-input--sm" type="date" value={filterDateTo} onChange={(e) => setFilterDateTo(e.target.value)} id="filter-date-to" />
-                </div>
-              </div>
-              {hasActiveFilters && (
-                <button className="tx-filters__clear" onClick={clearFilters} id="clear-filters">
-                  Reset Filter
+            {/* ── Active filter tags ─────────────────────── */}
+            {hasActiveFilters && (
+              <div className="tx-active-filters" id="active-filter-tags">
+                {filterType !== "all" && (
+                  <span className="tx-filter-tag">
+                    {filterType === "income" ? "Pemasukan" : "Pengeluaran"}
+                    <button onClick={() => setFilterType("all")} className="tx-filter-tag__remove">×</button>
+                  </span>
+                )}
+                {filterCategory !== "all" && (
+                  <span className="tx-filter-tag">
+                    {categories.find((c) => String(c.id) === filterCategory)?.name || "Kategori"}
+                    <button onClick={() => setFilterCategory("all")} className="tx-filter-tag__remove">×</button>
+                  </span>
+                )}
+                {(filterDateFrom || filterDateTo) && (
+                  <span className="tx-filter-tag">
+                    {filterDateFrom || "..."} — {filterDateTo || "..."}
+                    <button onClick={() => { setFilterDateFrom(""); setFilterDateTo(""); }} className="tx-filter-tag__remove">×</button>
+                  </span>
+                )}
+                <button className="tx-active-filters__clear" onClick={() => { setFilterType("all"); setFilterCategory("all"); setFilterDateFrom(""); setFilterDateTo(""); }} id="clear-all-filters">
+                  Hapus Semua
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* ── Count ────────────────────────────────── */}
             <div className="category-count">
@@ -353,9 +404,9 @@ function TransactionList() {
             {filtered.length === 0 ? (
               <div className="dashboard-empty">
                 <span className="dashboard-empty__icon">📭</span>
-                <p>{hasActiveFilters ? "Tidak ada transaksi yang cocok dengan filter." : "Belum ada transaksi."}</p>
+                <p>{hasActiveFilters || searchQuery ? "Tidak ada transaksi yang cocok dengan filter." : "Belum ada transaksi."}</p>
                 <span className="dashboard-empty__sub">
-                  {hasActiveFilters ? "Coba ubah filter atau kata kunci pencarian." : "Mulai catat pemasukan dan pengeluaranmu!"}
+                  {hasActiveFilters || searchQuery ? "Coba ubah filter atau kata kunci pencarian." : "Mulai catat pemasukan dan pengeluaranmu!"}
                 </span>
               </div>
             ) : (
@@ -452,6 +503,134 @@ function TransactionList() {
           </>
         )}
       </main>
+
+      {/* ── Filter Modal ──────────────────────────────────── */}
+      {filterModalOpen && (
+        <div className="modal-overlay" onClick={() => setFilterModalOpen(false)} id="filter-modal-overlay">
+          <div className="modal-content filter-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="modal-header">
+              <h3>🔍 Filter Transaksi</h3>
+              <button className="modal-close" onClick={() => setFilterModalOpen(false)} id="close-filter-modal">
+                <CloseIcon />
+              </button>
+            </div>
+
+            {/* Accordion Body */}
+            <div className="filter-modal__body">
+              {/* ── Date Range Accordion ── */}
+              <div className={`filter-accordion ${accordionDate ? "filter-accordion--open" : ""}`}>
+                <button className="filter-accordion__header" onClick={() => setAccordionDate(!accordionDate)} id="accordion-date-toggle">
+                  <div className="filter-accordion__header-left">
+                    <span className="filter-accordion__icon">📅</span>
+                    <span className="filter-accordion__title">Filter Tanggal</span>
+                    {(tempDateFrom || tempDateTo) && <span className="filter-accordion__dot" />}
+                  </div>
+                  <span className={`filter-accordion__chevron ${accordionDate ? "filter-accordion__chevron--open" : ""}`}>
+                    <ChevronDownIcon />
+                  </span>
+                </button>
+                <div className="filter-accordion__content">
+                  <div className="filter-accordion__inner">
+                    <div className="filter-modal__date-group">
+                      <label className="filter-modal__label">Dari</label>
+                      <input
+                        className="form-input"
+                        type="date"
+                        value={tempDateFrom}
+                        onChange={(e) => setTempDateFrom(e.target.value)}
+                        id="filter-date-from"
+                      />
+                    </div>
+                    <div className="filter-modal__date-group">
+                      <label className="filter-modal__label">Sampai</label>
+                      <input
+                        className="form-input"
+                        type="date"
+                        value={tempDateTo}
+                        onChange={(e) => setTempDateTo(e.target.value)}
+                        id="filter-date-to"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Type Accordion ── */}
+              <div className={`filter-accordion ${accordionType ? "filter-accordion--open" : ""}`}>
+                <button className="filter-accordion__header" onClick={() => setAccordionType(!accordionType)} id="accordion-type-toggle">
+                  <div className="filter-accordion__header-left">
+                    <span className="filter-accordion__icon">💱</span>
+                    <span className="filter-accordion__title">Filter Tipe</span>
+                    {tempType !== "all" && <span className="filter-accordion__dot" />}
+                  </div>
+                  <span className={`filter-accordion__chevron ${accordionType ? "filter-accordion__chevron--open" : ""}`}>
+                    <ChevronDownIcon />
+                  </span>
+                </button>
+                <div className="filter-accordion__content">
+                  <div className="filter-accordion__inner">
+                    <div className="filter-modal__chips">
+                      {["all", "income", "expense"].map((t) => (
+                        <button
+                          key={t}
+                          className={`filter-modal__chip ${tempType === t ? "filter-modal__chip--active" : ""}`}
+                          onClick={() => setTempType(t)}
+                          id={`filter-type-${t}`}
+                        >
+                          <span className="filter-modal__chip-icon">
+                            {t === "all" ? "📊" : t === "income" ? "💰" : "💸"}
+                          </span>
+                          {t === "all" ? "Semua" : t === "income" ? "Pemasukan" : "Pengeluaran"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Category Accordion ── */}
+              <div className={`filter-accordion ${accordionCategory ? "filter-accordion--open" : ""}`}>
+                <button className="filter-accordion__header" onClick={() => setAccordionCategory(!accordionCategory)} id="accordion-category-toggle">
+                  <div className="filter-accordion__header-left">
+                    <span className="filter-accordion__icon">🏷️</span>
+                    <span className="filter-accordion__title">Filter Kategori</span>
+                    {tempCategory !== "all" && <span className="filter-accordion__dot" />}
+                  </div>
+                  <span className={`filter-accordion__chevron ${accordionCategory ? "filter-accordion__chevron--open" : ""}`}>
+                    <ChevronDownIcon />
+                  </span>
+                </button>
+                <div className="filter-accordion__content">
+                  <div className="filter-accordion__inner">
+                    <select
+                      className="form-input form-select"
+                      value={tempCategory}
+                      onChange={(e) => setTempCategory(e.target.value)}
+                      id="filter-category"
+                    >
+                      <option value="all">Semua Kategori</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={String(c.id)}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="filter-modal__footer">
+              <button className="btn btn-ghost" onClick={resetFilters} id="reset-filter-btn">
+                Reset Filter
+              </button>
+              <button className="btn btn-primary" onClick={applyFilters} id="apply-filter-btn">
+                Apply Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Delete Modal ───────────────────────────────── */}
       <ConfirmModal
