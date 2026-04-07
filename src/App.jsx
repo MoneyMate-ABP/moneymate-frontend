@@ -26,6 +26,7 @@ function PublicRoute({ children }) {
 function App() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route
         path="/login"
         element={

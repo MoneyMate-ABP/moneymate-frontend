@@ -22,7 +22,14 @@ function parseFromRupiah(str) {
   return digits ? parseInt(digits, 10) : 0;
 }
 
-function CurrencyInput({ value, onChange, id, placeholder = "0", error, disabled }) {
+function CurrencyInput({
+  value,
+  onChange,
+  id,
+  placeholder = "0",
+  error,
+  disabled,
+}) {
   const [display, setDisplay] = useState(value ? formatToRupiah(value) : "");
 
   // Sync display when value changes externally

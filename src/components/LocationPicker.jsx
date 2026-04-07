@@ -2,14 +2,28 @@ import { useState, useCallback, useEffect } from "react";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const MapPinIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
     <circle cx="12" cy="10" r="3" />
   </svg>
 );
 
 const CrosshairIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="12" cy="12" r="10" />
     <line x1="22" y1="12" x2="18" y2="12" />
     <line x1="6" y1="12" x2="2" y2="12" />
@@ -19,14 +33,28 @@ const CrosshairIcon = () => (
 );
 
 const TrashSmIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
   </svg>
 );
 
 const ExternalLinkIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
     <polyline points="15 3 21 3 21 9" />
     <line x1="10" y1="14" x2="21" y2="3" />
@@ -43,7 +71,13 @@ const ExternalLinkIcon = () => (
  *   onLngChange   — (value: string) => void
  *   disabled      — boolean
  */
-function LocationPicker({ latitude, longitude, onLatChange, onLngChange, disabled }) {
+function LocationPicker({
+  latitude,
+  longitude,
+  onLatChange,
+  onLngChange,
+  disabled,
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [supported] = useState(() => !!navigator.geolocation);
@@ -81,7 +115,7 @@ function LocationPicker({ latitude, longitude, onLatChange, onLngChange, disable
             setError("Gagal mendapatkan lokasi.");
         }
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
     );
   }, [onLatChange, onLngChange]);
 
@@ -144,7 +178,9 @@ function LocationPicker({ latitude, longitude, onLatChange, onLngChange, disable
       {/* Coordinate fields */}
       <div className="location-picker__fields">
         <div className="location-picker__field">
-          <label className="location-picker__label" htmlFor="lp-latitude">Lat</label>
+          <label className="location-picker__label" htmlFor="lp-latitude">
+            Lat
+          </label>
           <input
             id="lp-latitude"
             className="form-input form-input--sm"
@@ -156,7 +192,9 @@ function LocationPicker({ latitude, longitude, onLatChange, onLngChange, disable
           />
         </div>
         <div className="location-picker__field">
-          <label className="location-picker__label" htmlFor="lp-longitude">Lng</label>
+          <label className="location-picker__label" htmlFor="lp-longitude">
+            Lng
+          </label>
           <input
             id="lp-longitude"
             className="form-input form-input--sm"

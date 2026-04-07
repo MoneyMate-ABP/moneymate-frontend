@@ -15,14 +15,30 @@ import TransactionFormModal from "../../components/TransactionFormModal";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const WalletIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
     <line x1="1" y1="10" x2="23" y2="10" />
   </svg>
 );
 
 const LogoutIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" y1="12" x2="9" y2="12" />
@@ -30,21 +46,42 @@ const LogoutIcon = () => (
 );
 
 const PlusIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="12" y1="5" x2="12" y2="19" />
     <line x1="5" y1="12" x2="19" y2="12" />
   </svg>
 );
 
 const EditIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
 const TrashIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     <line x1="10" y1="11" x2="10" y2="17" />
@@ -53,35 +90,72 @@ const TrashIcon = () => (
 );
 
 const EyeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
     <circle cx="12" cy="12" r="3" />
   </svg>
 );
 
 const BackIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="19" y1="12" x2="5" y2="12" />
     <polyline points="12 19 5 12 12 5" />
   </svg>
 );
 
 const SearchIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="11" cy="11" r="8" />
     <line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 );
 
 const MapPinIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width="14"
+    height="14"
+  >
     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
     <circle cx="12" cy="10" r="3" />
   </svg>
 );
 
 const CloseIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
@@ -126,19 +200,26 @@ function TransactionDetailModal({ isOpen, onClose, transaction }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Detail Transaksi</h3>
-          <button className="modal-close" onClick={onClose} id="detail-modal-close">
+          <button
+            className="modal-close"
+            onClick={onClose}
+            id="detail-modal-close"
+          >
             <CloseIcon />
           </button>
         </div>
 
         <div className="tx-detail">
           {/* Amount Hero */}
-          <div className={`tx-detail__amount-hero ${isExpense ? "expense" : "income"}`}>
+          <div
+            className={`tx-detail__amount-hero ${isExpense ? "expense" : "income"}`}
+          >
             <span className="tx-detail__type-label">
               {isExpense ? "Pengeluaran" : "Pemasukan"}
             </span>
             <span className="tx-detail__amount-value">
-              {isExpense ? "-" : "+"}{formatCurrency(transaction.amount)}
+              {isExpense ? "-" : "+"}
+              {formatCurrency(transaction.amount)}
             </span>
           </div>
 
@@ -146,12 +227,17 @@ function TransactionDetailModal({ isOpen, onClose, transaction }) {
           <div className="tx-detail__rows">
             <div className="tx-detail__row">
               <span className="tx-detail__label">Kategori</span>
-              <CategoryBadge name={transaction.category_name} type={transaction.type} />
+              <CategoryBadge
+                name={transaction.category_name}
+                type={transaction.type}
+              />
             </div>
 
             <div className="tx-detail__row">
               <span className="tx-detail__label">Tanggal</span>
-              <span className="tx-detail__value">{formatDateFull(transaction.date)}</span>
+              <span className="tx-detail__value">
+                {formatDateFull(transaction.date)}
+              </span>
             </div>
 
             {transaction.note && (
@@ -164,7 +250,9 @@ function TransactionDetailModal({ isOpen, onClose, transaction }) {
             {transaction.budget_period_name && (
               <div className="tx-detail__row">
                 <span className="tx-detail__label">Budget Period</span>
-                <span className="tx-detail__value">{transaction.budget_period_name}</span>
+                <span className="tx-detail__value">
+                  {transaction.budget_period_name}
+                </span>
               </div>
             )}
 
@@ -243,7 +331,7 @@ function TransactionsPage() {
         getCategories(),
       ]);
       const sorted = (txRes.data || []).sort(
-        (a, b) => new Date(b.date) - new Date(a.date)
+        (a, b) => new Date(b.date) - new Date(a.date),
       );
       setTransactions(sorted);
       setCategories(catRes.data || []);
@@ -261,7 +349,11 @@ function TransactionsPage() {
 
   // Logout
   const handleLogout = async () => {
-    try { await logoutUser(); } catch { /* noop */ }
+    try {
+      await logoutUser();
+    } catch {
+      /* noop */
+    }
     logout();
     navigate("/login", { replace: true });
   };
@@ -327,9 +419,15 @@ function TransactionsPage() {
   // Filtering
   const filtered = transactions.filter((tx) => {
     if (filterType !== "all" && tx.type !== filterType) return false;
-    if (filterCategory !== "all" && String(tx.category_id) !== filterCategory) return false;
-    if (filterDateFrom && new Date(tx.date) < new Date(filterDateFrom)) return false;
-    if (filterDateTo && new Date(tx.date) > new Date(filterDateTo + "T23:59:59")) return false;
+    if (filterCategory !== "all" && String(tx.category_id) !== filterCategory)
+      return false;
+    if (filterDateFrom && new Date(tx.date) < new Date(filterDateFrom))
+      return false;
+    if (
+      filterDateTo &&
+      new Date(tx.date) > new Date(filterDateTo + "T23:59:59")
+    )
+      return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const matchNote = (tx.note || "").toLowerCase().includes(q);
@@ -343,7 +441,7 @@ function TransactionsPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
   const paginated = filtered.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   // Reset page when filters change
@@ -374,7 +472,12 @@ function TransactionsPage() {
     setSearchQuery("");
   };
 
-  const hasActiveFilters = filterType !== "all" || filterCategory !== "all" || filterDateFrom || filterDateTo || searchQuery;
+  const hasActiveFilters =
+    filterType !== "all" ||
+    filterCategory !== "all" ||
+    filterDateFrom ||
+    filterDateTo ||
+    searchQuery;
 
   return (
     <div className="dashboard-layout">
@@ -462,7 +565,9 @@ function TransactionsPage() {
               </div>
               <div className="tx-mini-card tx-mini-card--balance">
                 <span className="tx-mini-card__label">💵 Selisih</span>
-                <span className={`tx-mini-card__value ${totalIncome - totalExpense >= 0 ? "income" : "expense"}`}>
+                <span
+                  className={`tx-mini-card__value ${totalIncome - totalExpense >= 0 ? "income" : "expense"}`}
+                >
                   {formatCurrency(totalIncome - totalExpense)}
                 </span>
               </div>
@@ -481,7 +586,11 @@ function TransactionsPage() {
                   id="search-tx-input"
                 />
               </div>
-              <button className="btn btn-primary tx-toolbar__add" onClick={openCreate} id="add-tx-btn">
+              <button
+                className="btn btn-primary tx-toolbar__add"
+                onClick={openCreate}
+                id="add-tx-btn"
+              >
                 <PlusIcon />
                 <span>Tambah</span>
               </button>
@@ -500,7 +609,11 @@ function TransactionsPage() {
                       onClick={() => setFilterType(t)}
                       id={`filter-type-${t}`}
                     >
-                      {t === "all" ? "Semua" : t === "income" ? "Pemasukan" : "Pengeluaran"}
+                      {t === "all"
+                        ? "Semua"
+                        : t === "income"
+                          ? "Pemasukan"
+                          : "Pengeluaran"}
                     </button>
                   ))}
                 </div>
@@ -547,7 +660,11 @@ function TransactionsPage() {
               </div>
 
               {hasActiveFilters && (
-                <button className="tx-filters__clear" onClick={clearFilters} id="clear-filters">
+                <button
+                  className="tx-filters__clear"
+                  onClick={clearFilters}
+                  id="clear-filters"
+                >
                   Reset Filter
                 </button>
               )}
@@ -601,18 +718,27 @@ function TransactionsPage() {
                               {formatDate(tx.date)}
                             </td>
                             <td>
-                              <CategoryBadge name={tx.category_name} type={tx.type} />
+                              <CategoryBadge
+                                name={tx.category_name}
+                                type={tx.type}
+                              />
                             </td>
                             <td className="tx-table__note">
                               <span>{tx.note || "—"}</span>
                               {hasLocation && (
-                                <span className="tx-table__location-dot" title="Memiliki lokasi">
+                                <span
+                                  className="tx-table__location-dot"
+                                  title="Memiliki lokasi"
+                                >
                                   <MapPinIcon />
                                 </span>
                               )}
                             </td>
-                            <td className={`tx-table__amount ${isExpense ? "expense" : "income"}`}>
-                              {isExpense ? "-" : "+"}{formatCurrency(tx.amount)}
+                            <td
+                              className={`tx-table__amount ${isExpense ? "expense" : "income"}`}
+                            >
+                              {isExpense ? "-" : "+"}
+                              {formatCurrency(tx.amount)}
                             </td>
                             <td className="tx-table__actions">
                               <button
@@ -660,19 +786,30 @@ function TransactionsPage() {
                         onClick={() => openDetail(tx)}
                       >
                         <div className="tx-mobile-card__top">
-                          <CategoryBadge name={tx.category_name} type={tx.type} />
-                          <span className={`tx-mobile-card__amount ${isExpense ? "expense" : "income"}`}>
-                            {isExpense ? "-" : "+"}{formatCurrency(tx.amount)}
+                          <CategoryBadge
+                            name={tx.category_name}
+                            type={tx.type}
+                          />
+                          <span
+                            className={`tx-mobile-card__amount ${isExpense ? "expense" : "income"}`}
+                          >
+                            {isExpense ? "-" : "+"}
+                            {formatCurrency(tx.amount)}
                           </span>
                         </div>
                         <div className="tx-mobile-card__bottom">
-                          <span className="tx-mobile-card__date">{formatDate(tx.date)}</span>
+                          <span className="tx-mobile-card__date">
+                            {formatDate(tx.date)}
+                          </span>
                           <span className="tx-mobile-card__note">
                             {tx.note || "—"}
                             {hasLocation && <MapPinIcon />}
                           </span>
                         </div>
-                        <div className="tx-mobile-card__actions" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="tx-mobile-card__actions"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <button
                             className="category-card__btn category-card__btn--edit"
                             onClick={() => openEdit(tx)}
@@ -704,15 +841,17 @@ function TransactionsPage() {
                       ‹ Prev
                     </button>
                     <div className="tx-pagination__pages">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          className={`tx-pagination__page ${currentPage === page ? "active" : ""}`}
-                          onClick={() => setCurrentPage(page)}
-                        >
-                          {page}
-                        </button>
-                      ))}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <button
+                            key={page}
+                            className={`tx-pagination__page ${currentPage === page ? "active" : ""}`}
+                            onClick={() => setCurrentPage(page)}
+                          >
+                            {page}
+                          </button>
+                        ),
+                      )}
                     </div>
                     <button
                       className="tx-pagination__btn"
@@ -753,7 +892,8 @@ function TransactionsPage() {
           <>
             Yakin ingin menghapus transaksi{" "}
             <strong>
-              &quot;{deletingTx?.category_name} — {formatCurrency(deletingTx?.amount || 0)}&quot;
+              &quot;{deletingTx?.category_name} —{" "}
+              {formatCurrency(deletingTx?.amount || 0)}&quot;
             </strong>
             ?
           </>

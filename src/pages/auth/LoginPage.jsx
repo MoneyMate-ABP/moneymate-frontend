@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { loginUser, loginWithGoogle } from "../../services/authService";
+import { validateEmail, parseApiError } from "../../utils/validation";
 
 /* ── Inline SVG icons ──────────────────────────────────── */
 const WalletIcon = () => (
@@ -44,18 +45,40 @@ const AlertIcon = () => (
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Show success message if redirected from register
+  useEffect(() => {
+    if (location.state?.registered) {
+      setSuccess("Registrasi berhasil! Silakan masuk dengan akun baru kamu.");
+      // Clear the state so it doesn't persist on refresh
+      window.history.replaceState({}, "");
+    }
+  }, [location.state]);
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
+
+    // Client-side email validation (matches backend regex)
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -63,9 +86,7 @@ function LoginPage() {
       setAuth(res.data.token, res.data.user);
       navigate("/", { replace: true });
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Login gagal. Periksa email dan password."
-      );
+      setError(parseApiError(err, "Login gagal. Periksa email dan password."));
     } finally {
       setLoading(false);
     }
@@ -73,6 +94,7 @@ function LoginPage() {
 
   const handleGoogleLogin = async () => {
     setError("");
+    setSuccess("");
     setGoogleLoading(true);
 
     try {
@@ -80,14 +102,15 @@ function LoginPage() {
       setAuth(res.data.token, res.data.user);
       navigate("/", { replace: true });
     } catch (err) {
-      if (err.code === "auth/popup-closed-by-user") {
-        // User closed popup — do nothing
+      if (
+        err.code === "auth/popup-closed-by-user" ||
+        err.code === "auth/cancelled-popup-request" ||
+        err.code === "auth/popup-blocked"
+      ) {
         setGoogleLoading(false);
         return;
       }
-      setError(
-        err.response?.data?.message || "Google login gagal. Coba lagi."
-      );
+      setError(parseApiError(err, "Google login gagal. Coba lagi."));
     } finally {
       setGoogleLoading(false);
     }
@@ -104,6 +127,14 @@ function LoginPage() {
           <h1>Welcome Back</h1>
           <p>Masuk ke akun MoneyMate kamu</p>
         </div>
+
+        {/* Success Alert */}
+        {success && (
+          <div className="alert alert-success">
+            <span>✅</span>
+            <span>{success}</span>
+          </div>
+        )}
 
         {/* Error Alert */}
         {error && (

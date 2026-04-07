@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { registerUser, loginWithGoogle } from "../../services/authService";
+import { validateEmail, validateName, validatePassword, parseApiError } from "../../utils/validation";
 
 /* ── Inline SVG icons ──────────────────────────────────── */
 const WalletIcon = () => (
@@ -61,30 +62,34 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    // Client-side validation
+    const nameError = validateName(name);
+    if (nameError) { setError(nameError); return; }
+
+    const emailError = validateEmail(email);
+    if (emailError) { setError(emailError); return; }
+
+    const passError = validatePassword(password);
+    if (passError) { setError(passError); return; }
 
     if (password !== confirmPassword) {
       setError("Password dan konfirmasi password tidak cocok.");
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password minimal 6 karakter.");
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const res = await registerUser({ name, email, password });
-      setAuth(res.data.token, res.data.user);
-      navigate("/", { replace: true });
+      await registerUser({ name: name.trim(), email: email.trim(), password });
+      navigate("/login", { replace: true, state: { registered: true } });
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Registrasi gagal. Coba lagi."
-      );
+      setError(parseApiError(err, "Registrasi gagal. Coba lagi."));
     } finally {
       setLoading(false);
     }
@@ -99,13 +104,15 @@ function RegisterPage() {
       setAuth(res.data.token, res.data.user);
       navigate("/", { replace: true });
     } catch (err) {
-      if (err.code === "auth/popup-closed-by-user") {
+      if (
+        err.code === "auth/popup-closed-by-user" ||
+        err.code === "auth/cancelled-popup-request" ||
+        err.code === "auth/popup-blocked"
+      ) {
         setGoogleLoading(false);
         return;
       }
-      setError(
-        err.response?.data?.message || "Google login gagal. Coba lagi."
-      );
+      setError(parseApiError(err, "Google login gagal. Coba lagi."));
     } finally {
       setGoogleLoading(false);
     }
