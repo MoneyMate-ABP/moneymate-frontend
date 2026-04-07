@@ -6,7 +6,11 @@ import { auth, googleProvider } from "../../firebase.config";
  * Register a new user (local auth)
  */
 export async function registerUser({ name, email, password }) {
-  const res = await api.post("/api/auth/register", { name, email, password });
+  const res = await api.post("/api/auth/register", {
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
+    password,
+  });
   return res.data; // { message, data: { token, user } }
 }
 
@@ -14,7 +18,10 @@ export async function registerUser({ name, email, password }) {
  * Login with email + password (local auth)
  */
 export async function loginUser({ email, password }) {
-  const res = await api.post("/api/auth/login", { email, password });
+  const res = await api.post("/api/auth/login", {
+    email: email.trim().toLowerCase(),
+    password,
+  });
   return res.data;
 }
 
@@ -22,10 +29,21 @@ export async function loginUser({ email, password }) {
  * Google Sign-In: opens Firebase popup, gets ID token, sends to backend
  */
 export async function loginWithGoogle() {
+  // Sign out any previous Firebase session first to avoid stale tokens
+  await auth.signOut().catch(() => {});
+
   const result = await signInWithPopup(auth, googleProvider);
-  const idToken = await result.user.getIdToken();
-  const res = await api.post("/api/auth/google", { idToken });
-  return res.data;
+  // Force-refresh to get a fresh, valid ID token
+  const idToken = await result.user.getIdToken(true);
+
+  try {
+    const res = await api.post("/api/auth/google", { idToken });
+    return res.data;
+  } finally {
+    // Sign out from Firebase — we only use it for the ID token exchange
+    // Our app uses its own JWT from the backend
+    await auth.signOut().catch(() => {});
+  }
 }
 
 /**
