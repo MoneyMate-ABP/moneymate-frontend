@@ -127,7 +127,7 @@ function RegisterPage() {
         const res = await completeGoogleRedirectLogin();
         if (!res || !active) return;
 
-        setAuth(res.data.token, res.data.user);
+        setAuth(res.token, res.user);
         navigate("/", { replace: true });
       } catch (err) {
         if (!active) return;
@@ -192,7 +192,7 @@ function RegisterPage() {
       const res = await loginWithGoogle();
       if (res?.redirect) return;
 
-      setAuth(res.data.token, res.data.user);
+      setAuth(res.token, res.user);
       navigate("/", { replace: true });
     } catch (err) {
       if (

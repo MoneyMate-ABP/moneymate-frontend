@@ -18,12 +18,24 @@ function shouldUseRedirectFlow() {
   return isIOS && isSafari;
 }
 
+function normalizeAuthPayload(payload) {
+  if (payload?.token && payload?.user) return payload;
+  if (payload?.data?.token && payload?.data?.user) return payload.data;
+  return null;
+}
+
 async function exchangeGoogleTokenToBackend(firebaseUser) {
   const idToken = await firebaseUser.getIdToken(true);
 
   try {
     const res = await api.post("/api/auth/google", { idToken });
-    return res.data;
+    const authPayload = normalizeAuthPayload(res.data);
+
+    if (!authPayload) {
+      throw new Error("Invalid auth payload from /api/auth/google");
+    }
+
+    return authPayload;
   } finally {
     // Sign out from Firebase — app session is handled by backend JWT.
     await auth.signOut().catch(() => {});
