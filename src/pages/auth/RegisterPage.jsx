@@ -1,26 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
-import { registerUser, loginWithGoogle } from "../../services/authService";
-import { validateEmail, validateName, validatePassword, parseApiError } from "../../utils/validation";
+import {
+  completeGoogleRedirectLogin,
+  registerUser,
+  loginWithGoogle,
+} from "../../services/authService";
+import {
+  validateEmail,
+  validateName,
+  validatePassword,
+  parseApiError,
+} from "../../utils/validation";
 
 /* ── Inline SVG icons ──────────────────────────────────── */
 const WalletIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
     <line x1="1" y1="10" x2="23" y2="10" />
   </svg>
 );
 
 const EyeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
     <circle cx="12" cy="12" r="3" />
   </svg>
 );
 
 const EyeOffIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
     <line x1="1" y1="1" x2="23" y2="23" />
   </svg>
@@ -28,15 +58,34 @@ const EyeOffIcon = () => (
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" fill="none">
-    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    <path
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+      fill="#4285F4"
+    />
+    <path
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      fill="#34A853"
+    />
+    <path
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      fill="#FBBC05"
+    />
+    <path
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      fill="#EA4335"
+    />
   </svg>
 );
 
 const AlertIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="12" cy="12" r="10" />
     <line x1="12" y1="8" x2="12" y2="12" />
     <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -44,7 +93,14 @@ const AlertIcon = () => (
 );
 
 const CheckIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
@@ -62,7 +118,31 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  useEffect(() => {
+    let active = true;
 
+    const completeRedirect = async () => {
+      setGoogleLoading(true);
+      try {
+        const res = await completeGoogleRedirectLogin();
+        if (!res || !active) return;
+
+        setAuth(res.data.token, res.data.user);
+        navigate("/", { replace: true });
+      } catch (err) {
+        if (!active) return;
+        setError(parseApiError(err, "Google login gagal. Coba lagi."));
+      } finally {
+        if (active) setGoogleLoading(false);
+      }
+    };
+
+    completeRedirect();
+
+    return () => {
+      active = false;
+    };
+  }, [navigate, setAuth]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,13 +150,22 @@ function RegisterPage() {
 
     // Client-side validation
     const nameError = validateName(name);
-    if (nameError) { setError(nameError); return; }
+    if (nameError) {
+      setError(nameError);
+      return;
+    }
 
     const emailError = validateEmail(email);
-    if (emailError) { setError(emailError); return; }
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
 
     const passError = validatePassword(password);
-    if (passError) { setError(passError); return; }
+    if (passError) {
+      setError(passError);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Password dan konfirmasi password tidak cocok.");
@@ -101,6 +190,8 @@ function RegisterPage() {
 
     try {
       const res = await loginWithGoogle();
+      if (res?.redirect) return;
+
       setAuth(res.data.token, res.data.user);
       navigate("/", { replace: true });
     } catch (err) {
@@ -109,7 +200,6 @@ function RegisterPage() {
         err.code === "auth/cancelled-popup-request" ||
         err.code === "auth/popup-blocked"
       ) {
-        setGoogleLoading(false);
         return;
       }
       setError(parseApiError(err, "Google login gagal. Coba lagi."));
@@ -141,7 +231,9 @@ function RegisterPage() {
         {/* Register Form */}
         <form onSubmit={handleSubmit} id="register-form">
           <div className="form-group">
-            <label className="form-label" htmlFor="register-name">Nama Lengkap</label>
+            <label className="form-label" htmlFor="register-name">
+              Nama Lengkap
+            </label>
             <input
               id="register-name"
               className="form-input"
@@ -155,7 +247,9 @@ function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="register-email">Email</label>
+            <label className="form-label" htmlFor="register-email">
+              Email
+            </label>
             <input
               id="register-email"
               className="form-input"
@@ -169,7 +263,9 @@ function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="register-password">Password</label>
+            <label className="form-label" htmlFor="register-password">
+              Password
+            </label>
             <div className="password-wrapper">
               <input
                 id="register-password"
@@ -186,7 +282,9 @@ function RegisterPage() {
                 type="button"
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                aria-label={
+                  showPassword ? "Sembunyikan password" : "Tampilkan password"
+                }
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
@@ -194,7 +292,9 @@ function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="register-confirm-password">Konfirmasi Password</label>
+            <label className="form-label" htmlFor="register-confirm-password">
+              Konfirmasi Password
+            </label>
             <div className="password-wrapper">
               <input
                 id="register-confirm-password"
@@ -208,7 +308,10 @@ function RegisterPage() {
                 autoComplete="new-password"
               />
               {confirmPassword && password === confirmPassword && (
-                <span className="password-toggle" style={{ color: '#2ecc71', cursor: 'default' }}>
+                <span
+                  className="password-toggle"
+                  style={{ color: "#2ecc71", cursor: "default" }}
+                >
                   <CheckIcon />
                 </span>
               )}
@@ -250,8 +353,7 @@ function RegisterPage() {
 
         {/* Footer */}
         <div className="auth-footer">
-          Sudah punya akun?{" "}
-          <Link to="/login">Masuk</Link>
+          Sudah punya akun? <Link to="/login">Masuk</Link>
         </div>
       </div>
     </div>

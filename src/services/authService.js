@@ -1,6 +1,34 @@
 import api from "./api";
-import { signInWithPopup } from "firebase/auth";
+import {
+  getRedirectResult,
+  signInWithPopup,
+  signInWithRedirect,
+} from "firebase/auth";
 import { auth, googleProvider } from "../../firebase.config";
+
+function shouldUseRedirectFlow() {
+  if (typeof window === "undefined") return false;
+
+  const ua = window.navigator.userAgent || "";
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (ua.includes("Macintosh") && "ontouchend" in document);
+  const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+
+  return isIOS && isSafari;
+}
+
+async function exchangeGoogleTokenToBackend(firebaseUser) {
+  const idToken = await firebaseUser.getIdToken(true);
+
+  try {
+    const res = await api.post("/api/auth/google", { idToken });
+    return res.data;
+  } finally {
+    // Sign out from Firebase — app session is handled by backend JWT.
+    await auth.signOut().catch(() => {});
+  }
+}
 
 /**
  * Register a new user (local auth)
@@ -29,21 +57,24 @@ export async function loginUser({ email, password }) {
  * Google Sign-In: opens Firebase popup, gets ID token, sends to backend
  */
 export async function loginWithGoogle() {
-  // Sign out any previous Firebase session first to avoid stale tokens
-  await auth.signOut().catch(() => {});
-
-  const result = await signInWithPopup(auth, googleProvider);
-  // Force-refresh to get a fresh, valid ID token
-  const idToken = await result.user.getIdToken(true);
-
-  try {
-    const res = await api.post("/api/auth/google", { idToken });
-    return res.data;
-  } finally {
-    // Sign out from Firebase — we only use it for the ID token exchange
-    // Our app uses its own JWT from the backend
-    await auth.signOut().catch(() => {});
+  if (shouldUseRedirectFlow()) {
+    await signInWithRedirect(auth, googleProvider);
+    return { redirect: true };
   }
+
+  // Popup remains default for desktop and non-Safari iOS browsers.
+  const result = await signInWithPopup(auth, googleProvider);
+  return exchangeGoogleTokenToBackend(result.user);
+}
+
+/**
+ * Complete redirect-based Google Sign-In after returning from provider page.
+ */
+export async function completeGoogleRedirectLogin() {
+  const result = await getRedirectResult(auth);
+  if (!result?.user) return null;
+
+  return exchangeGoogleTokenToBackend(result.user);
 }
 
 /**

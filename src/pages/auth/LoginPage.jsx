@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
-import { loginUser, loginWithGoogle } from "../../services/authService";
+import {
+  completeGoogleRedirectLogin,
+  loginUser,
+  loginWithGoogle,
+} from "../../services/authService";
 import { validateEmail, parseApiError } from "../../utils/validation";
 
 /* ── Inline SVG icons ──────────────────────────────────── */
@@ -65,6 +69,32 @@ function LoginPage() {
     }
   }, [location.state]);
 
+  useEffect(() => {
+    let active = true;
+
+    const completeRedirect = async () => {
+      setGoogleLoading(true);
+      try {
+        const res = await completeGoogleRedirectLogin();
+        if (!res || !active) return;
+
+        setAuth(res.data.token, res.data.user);
+        navigate("/", { replace: true });
+      } catch (err) {
+        if (!active) return;
+        setError(parseApiError(err, "Google login gagal. Coba lagi."));
+      } finally {
+        if (active) setGoogleLoading(false);
+      }
+    };
+
+    completeRedirect();
+
+    return () => {
+      active = false;
+    };
+  }, [navigate, setAuth]);
+
 
 
   const handleSubmit = async (e) => {
@@ -99,6 +129,8 @@ function LoginPage() {
 
     try {
       const res = await loginWithGoogle();
+      if (res?.redirect) return;
+
       setAuth(res.data.token, res.data.user);
       navigate("/", { replace: true });
     } catch (err) {
@@ -107,7 +139,6 @@ function LoginPage() {
         err.code === "auth/cancelled-popup-request" ||
         err.code === "auth/popup-blocked"
       ) {
-        setGoogleLoading(false);
         return;
       }
       setError(parseApiError(err, "Google login gagal. Coba lagi."));
