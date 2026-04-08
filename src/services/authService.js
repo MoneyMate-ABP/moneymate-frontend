@@ -1,10 +1,56 @@
 import api from "./api";
 import {
   getRedirectResult,
+  onAuthStateChanged,
   signInWithPopup,
   signInWithRedirect,
 } from "firebase/auth";
 import { auth, googleProvider } from "../../firebase.config";
+
+const REDIRECT_PENDING_KEY = "mm_google_redirect_pending";
+
+function setRedirectPending(value) {
+  if (typeof window === "undefined") return;
+  try {
+    if (value) {
+      window.sessionStorage.setItem(REDIRECT_PENDING_KEY, "1");
+    } else {
+      window.sessionStorage.removeItem(REDIRECT_PENDING_KEY);
+    }
+  } catch {
+    // Ignore storage access issues (private mode restrictions, etc.)
+  }
+}
+
+function isRedirectPending() {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.sessionStorage.getItem(REDIRECT_PENDING_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function waitForAuthUser(timeoutMs = 4500) {
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      unsubscribe();
+      resolve(null);
+    }, timeoutMs);
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (settled || !user) return;
+      settled = true;
+      clearTimeout(timer);
+      unsubscribe();
+      resolve(user);
+    });
+  });
+}
 
 function shouldUseRedirectFlow() {
   if (typeof window === "undefined") return false;
@@ -70,6 +116,7 @@ export async function loginUser({ email, password }) {
  */
 export async function loginWithGoogle() {
   if (shouldUseRedirectFlow()) {
+    setRedirectPending(true);
     await signInWithRedirect(auth, googleProvider);
     return { redirect: true };
   }
@@ -84,9 +131,20 @@ export async function loginWithGoogle() {
  */
 export async function completeGoogleRedirectLogin() {
   const result = await getRedirectResult(auth);
-  if (!result?.user) return null;
+  const redirectUser = result?.user || null;
 
-  return exchangeGoogleTokenToBackend(result.user);
+  if (redirectUser) {
+    setRedirectPending(false);
+    return exchangeGoogleTokenToBackend(redirectUser);
+  }
+
+  if (!isRedirectPending()) return null;
+
+  const fallbackUser = auth.currentUser || (await waitForAuthUser());
+  if (!fallbackUser) return null;
+
+  setRedirectPending(false);
+  return exchangeGoogleTokenToBackend(fallbackUser);
 }
 
 /**
