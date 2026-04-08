@@ -9,21 +9,9 @@ import {
 import { getCategories } from "../../services/categoryService";
 import CategoryBadge from "../../components/CategoryBadge";
 import ConfirmModal from "../../components/ConfirmModal";
+import DateRangePicker from "../../components/ui/DateRangePicker";
 
-/* ── SVG Icons ─────────────────────────────────────────── */
-const WalletIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-    <line x1="1" y1="10" x2="23" y2="10" />
-  </svg>
-);
-const LogoutIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    <polyline points="16 17 21 12 16 7" />
-    <line x1="21" y1="12" x2="9" y2="12" />
-  </svg>
-);
+
 const PlusIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="12" y1="5" x2="12" y2="19" />
@@ -107,7 +95,6 @@ const formatDate = (dateStr) =>
 function TransactionList() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
 
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -175,12 +162,7 @@ function TransactionList() {
     fetchData();
   }, [fetchData]);
 
-  // Logout
-  const handleLogout = async () => {
-    try { await logoutUser(); } catch { /* noop */ }
-    logout();
-    navigate("/login", { replace: true });
-  };
+
 
   // Delete
   const handleDelete = async () => {
@@ -253,8 +235,6 @@ function TransactionList() {
   const totalIncome = filtered.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
   const totalExpense = filtered.filter((t) => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
 
-  const today = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-
   const hasActiveFilters = filterType !== "all" || filterCategory !== "all" || filterDateFrom || filterDateTo;
   const activeFilterCount = [
     filterType !== "all",
@@ -263,28 +243,7 @@ function TransactionList() {
   ].filter(Boolean).length;
 
   return (
-    <div className="dashboard-layout">
-      {/* ── Header ─────────────────────────────────────── */}
-      <header className="dashboard-header">
-        <div className="dashboard-header__left">
-          <div className="dashboard-header__logo"><WalletIcon /></div>
-          <div>
-            <h2>MoneyMate</h2>
-            <span className="dashboard-header__date">{today}</span>
-          </div>
-        </div>
-        <div className="dashboard-header__right">
-          <div className="dashboard-header__user">
-            <div className="dashboard-header__avatar">
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
-            <span className="dashboard-header__name">{user?.name}</span>
-          </div>
-          <button className="btn-logout" onClick={handleLogout} id="logout-btn">
-            <LogoutIcon /><span>Logout</span>
-          </button>
-        </div>
-      </header>
+    <div className="page-container">
 
       {/* ── Toast ──────────────────────────────────────── */}
       {toast && (
@@ -532,26 +491,12 @@ function TransactionList() {
                 </button>
                 <div className="filter-accordion__content">
                   <div className="filter-accordion__inner">
-                    <div className="filter-modal__date-group">
-                      <label className="filter-modal__label">Dari</label>
-                      <input
-                        className="form-input"
-                        type="date"
-                        value={tempDateFrom}
-                        onChange={(e) => setTempDateFrom(e.target.value)}
-                        id="filter-date-from"
-                      />
-                    </div>
-                    <div className="filter-modal__date-group">
-                      <label className="filter-modal__label">Sampai</label>
-                      <input
-                        className="form-input"
-                        type="date"
-                        value={tempDateTo}
-                        onChange={(e) => setTempDateTo(e.target.value)}
-                        id="filter-date-to"
-                      />
-                    </div>
+                    <DateRangePicker
+                      startDate={tempDateFrom}
+                      endDate={tempDateTo}
+                      onStartChange={setTempDateFrom}
+                      onEndChange={setTempDateTo}
+                    />
                   </div>
                 </div>
               </div>
