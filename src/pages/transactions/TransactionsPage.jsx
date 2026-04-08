@@ -12,6 +12,7 @@ import { getCategories } from "../../services/categoryService";
 import CategoryBadge from "../../components/CategoryBadge";
 import ConfirmModal from "../../components/ConfirmModal";
 import TransactionFormModal from "../../components/TransactionFormModal";
+import { getLocationName } from "../../utils/locationLookup";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const WalletIcon = () => (
@@ -311,6 +312,7 @@ function TransactionsPage() {
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [locationNames, setLocationNames] = useState({});
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -443,6 +445,34 @@ function TransactionsPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
+
+  useEffect(() => {
+    let active = true;
+
+    const targets = paginated.filter(
+      (tx) => tx.latitude && tx.longitude && !locationNames[tx.id],
+    );
+
+    if (targets.length === 0) return undefined;
+
+    (async () => {
+      const updates = {};
+      for (const tx of targets) {
+        const name = await getLocationName(tx.latitude, tx.longitude);
+        if (name) {
+          updates[tx.id] = name;
+        }
+      }
+
+      if (active && Object.keys(updates).length > 0) {
+        setLocationNames((prev) => ({ ...prev, ...updates }));
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [paginated, locationNames]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -733,6 +763,11 @@ function TransactionsPage() {
                                   <MapPinIcon />
                                 </span>
                               )}
+                              {hasLocation && locationNames[tx.id] && (
+                                <span className="tx-location-preview">
+                                  {locationNames[tx.id]}
+                                </span>
+                              )}
                             </td>
                             <td
                               className={`tx-table__amount ${isExpense ? "expense" : "income"}`}
@@ -806,6 +841,11 @@ function TransactionsPage() {
                             {hasLocation && <MapPinIcon />}
                           </span>
                         </div>
+                        {hasLocation && locationNames[tx.id] && (
+                          <span className="tx-location-preview tx-location-preview--mobile">
+                            {locationNames[tx.id]}
+                          </span>
+                        )}
                         <div
                           className="tx-mobile-card__actions"
                           onClick={(e) => e.stopPropagation()}

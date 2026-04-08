@@ -76,13 +76,55 @@ function LocationPicker({
   longitude,
   onLatChange,
   onLngChange,
+  value,
+  onChange,
   disabled,
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [placeName, setPlaceName] = useState("");
+  const [placeLoading, setPlaceLoading] = useState(false);
+  const [placeError, setPlaceError] = useState("");
   const [supported] = useState(() => !!navigator.geolocation);
 
-  const hasLocation = latitude && longitude;
+  const latValue = latitude ?? value?.lat ?? "";
+  const lngValue = longitude ?? value?.lng ?? "";
+
+  const latNum = Number(latValue);
+  const lngNum = Number(lngValue);
+  const hasLocation =
+    Number.isFinite(latNum) &&
+    Number.isFinite(lngNum) &&
+    String(latValue).trim() !== "" &&
+    String(lngValue).trim() !== "";
+
+  const setLat = useCallback(
+    (nextLat) => {
+      if (onLatChange) onLatChange(nextLat);
+      if (onChange) {
+        const currentLng = longitude ?? value?.lng ?? "";
+        onChange({
+          lat: nextLat === "" ? null : Number(nextLat),
+          lng: currentLng === "" ? null : Number(currentLng),
+        });
+      }
+    },
+    [onLatChange, onChange, longitude, value?.lng],
+  );
+
+  const setLng = useCallback(
+    (nextLng) => {
+      if (onLngChange) onLngChange(nextLng);
+      if (onChange) {
+        const currentLat = latitude ?? value?.lat ?? "";
+        onChange({
+          lat: currentLat === "" ? null : Number(currentLat),
+          lng: nextLng === "" ? null : Number(nextLng),
+        });
+      }
+    },
+    [onLngChange, onChange, latitude, value?.lat],
+  );
 
   const handleGetLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -95,8 +137,8 @@ function LocationPicker({
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        onLatChange(pos.coords.latitude.toString());
-        onLngChange(pos.coords.longitude.toString());
+        setLat(pos.coords.latitude.toString());
+        setLng(pos.coords.longitude.toString());
         setLoading(false);
       },
       (err) => {
@@ -117,16 +159,22 @@ function LocationPicker({
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
     );
-  }, [onLatChange, onLngChange]);
+  }, [setLat, setLng]);
 
   const handleClear = useCallback(() => {
-    onLatChange("");
-    onLngChange("");
+    setLat("");
+    setLng("");
+    setPlaceName("");
+    setPlaceError("");
     setError("");
-  }, [onLatChange, onLngChange]);
+  }, [setLat, setLng]);
 
   const mapsUrl = hasLocation
-    ? `https://www.google.com/maps?q=${latitude},${longitude}`
+    ? `https://www.google.com/maps?q=${latNum},${lngNum}`
+    : null;
+
+  const embedMapsUrl = hasLocation
+    ? `https://maps.google.com/maps?q=${latNum},${lngNum}&z=16&output=embed`
     : null;
 
   // Clear error after 5s
@@ -135,6 +183,45 @@ function LocationPicker({
     const t = setTimeout(() => setError(""), 5000);
     return () => clearTimeout(t);
   }, [error]);
+
+  useEffect(() => {
+    if (!hasLocation) {
+      setPlaceName("");
+      setPlaceError("");
+      setPlaceLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    async function fetchPlaceName() {
+      setPlaceLoading(true);
+      setPlaceError("");
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latNum}&lon=${lngNum}&zoom=18&addressdetails=1`,
+          {
+            signal: controller.signal,
+            headers: {
+              "Accept-Language": "id,en",
+            },
+          },
+        );
+
+        if (!res.ok) throw new Error("reverse geocoding failed");
+
+        const data = await res.json();
+        setPlaceName(data?.display_name || "Nama lokasi tidak tersedia");
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        setPlaceError("Nama lokasi tidak tersedia saat ini.");
+      } finally {
+        setPlaceLoading(false);
+      }
+    }
+
+    fetchPlaceName();
+    return () => controller.abort();
+  }, [hasLocation, latNum, lngNum]);
 
   return (
     <div className="location-picker" id="location-picker">
@@ -186,8 +273,8 @@ function LocationPicker({
             className="form-input form-input--sm"
             type="text"
             placeholder="Latitude"
-            value={latitude || ""}
-            onChange={(e) => onLatChange(e.target.value)}
+            value={latValue ?? ""}
+            onChange={(e) => setLat(e.target.value)}
             disabled={disabled}
           />
         </div>
@@ -200,8 +287,8 @@ function LocationPicker({
             className="form-input form-input--sm"
             type="text"
             placeholder="Longitude"
-            value={longitude || ""}
-            onChange={(e) => onLngChange(e.target.value)}
+            value={lngValue ?? ""}
+            onChange={(e) => setLng(e.target.value)}
             disabled={disabled}
           />
         </div>
@@ -209,19 +296,42 @@ function LocationPicker({
 
       {/* Preview link */}
       {hasLocation && (
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="location-picker__preview"
-          id="location-preview-link"
-        >
-          <MapPinIcon />
-          <span className="location-picker__coords">
-            {Number(latitude).toFixed(6)}, {Number(longitude).toFixed(6)}
-          </span>
-          <ExternalLinkIcon />
-        </a>
+        <div className="location-picker__preview-wrap">
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="location-picker__preview"
+            id="location-preview-link"
+          >
+            <MapPinIcon />
+            <span className="location-picker__coords">
+              {latNum.toFixed(6)}, {lngNum.toFixed(6)}
+            </span>
+            <ExternalLinkIcon />
+          </a>
+
+          <div className="location-picker__place" id="location-place-preview">
+            {placeLoading ? (
+              <span className="location-picker__place-loading">
+                Mencari nama lokasi...
+              </span>
+            ) : placeError ? (
+              <span className="location-picker__place-error">{placeError}</span>
+            ) : (
+              <span className="location-picker__place-text">{placeName}</span>
+            )}
+          </div>
+
+          <div className="location-picker__map" id="location-map-preview">
+            <iframe
+              title="Preview peta lokasi"
+              src={embedMapsUrl}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        </div>
       )}
     </div>
   );

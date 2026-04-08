@@ -3514,6 +3514,7 @@ a:hover {
   max-width: 200px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
@@ -3621,6 +3622,25 @@ a:hover {
 .tx-mobile-card__note svg {
   color: var(--color-accent);
   flex-shrink: 0;
+}
+
+.tx-location-preview {
+  width: 100%;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tx-location-preview--mobile {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tx-mobile-card__actions {
@@ -4171,6 +4191,66 @@ a:hover {
   font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
   font-size: 0.75rem;
   letter-spacing: 0.01em;
+}
+
+.location-picker__preview-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.location-picker__place {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.location-picker__place-text,
+.location-picker__place-loading,
+.location-picker__place-error {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.location-picker__place-text {
+  color: var(--color-text-secondary);
+}
+
+.location-picker__place-loading {
+  color: var(--color-text-muted);
+}
+
+.location-picker__place-error {
+  color: #ff6b7a;
+}
+
+.location-picker__map {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(108, 99, 255, 0.18);
+  background: rgba(108, 99, 255, 0.06);
+  min-height: 150px;
+}
+
+.location-picker__map iframe {
+  width: 100%;
+  height: 150px;
+  border: 0;
+  display: block;
+}
+
+/* Keep date inputs from overflowing on narrow mobile screens */
+.form-input[type="date"] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .form-input[type="date"] {
+    font-size: 16px;
+  }
 }
 
 /* ─── Tambahan Modifikasi Dashboard (Daily Summary & Quick Actions) ─── */
