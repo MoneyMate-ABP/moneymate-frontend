@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import useAuthStore from "../../store/authStore";
-import { logoutUser } from "../../services/authService";
 import {
   getTransaction,
   createTransaction,
@@ -48,7 +47,6 @@ function TransactionForm() {
   const isEdit = !!id;
 
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
 
   const [categories, setCategories] = useState([]);
   const [pageLoading, setPageLoading] = useState(isEdit);
@@ -157,39 +155,8 @@ function TransactionForm() {
     }
   };
 
-  // Logout
-  const handleLogout = async () => {
-    try { await logoutUser(); } catch { /* noop */ }
-    logout();
-    navigate("/login", { replace: true });
-  };
-
-  const today = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-
   return (
     <div className="dashboard-layout">
-      {/* ── Header ─────────────────────────────────────── */}
-      <header className="dashboard-header">
-        <div className="dashboard-header__left">
-          <div className="dashboard-header__logo"><WalletIcon /></div>
-          <div>
-            <h2>MoneyMate</h2>
-            <span className="dashboard-header__date">{today}</span>
-          </div>
-        </div>
-        <div className="dashboard-header__right">
-          <div className="dashboard-header__user">
-            <div className="dashboard-header__avatar">
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
-            <span className="dashboard-header__name">{user?.name}</span>
-          </div>
-          <button className="btn-logout" onClick={handleLogout} id="logout-btn">
-            <LogoutIcon /><span>Logout</span>
-          </button>
-        </div>
-      </header>
-
       {/* ── Toast ──────────────────────────────────────── */}
       {toast && (
         <div className={`toast toast--${toast.type}`} id="toast-notification">
@@ -200,12 +167,20 @@ function TransactionForm() {
       {/* ── Main ───────────────────────────────────────── */}
       <main className="dashboard-main">
         <div className="category-page__header">
-          <button className="category-page__back" onClick={() => navigate("/transactions")} id="back-to-tx-list">
+          <button
+            className="category-page__back"
+            onClick={() => navigate("/transactions")}
+            id="back-to-tx-list"
+          >
             <BackIcon />
           </button>
           <div>
             <h1>{isEdit ? "Edit Transaksi" : "Tambah Transaksi"}</h1>
-            <p>{isEdit ? "Ubah data transaksi yang sudah ada" : "Catat transaksi baru"}</p>
+            <p>
+              {isEdit
+                ? "Ubah data transaksi yang sudah ada"
+                : "Catat transaksi baru"}
+            </p>
           </div>
         </div>
 
@@ -218,7 +193,11 @@ function TransactionForm() {
           <div className="dashboard-error">
             <span className="dashboard-error__icon">⚠️</span>
             <p>{fetchError}</p>
-            <button className="btn btn-primary" style={{ width: "auto", marginTop: "12px" }} onClick={() => window.location.reload()}>
+            <button
+              className="btn btn-primary"
+              style={{ width: "auto", marginTop: "12px" }}
+              onClick={() => window.location.reload()}
+            >
               Coba lagi
             </button>
           </div>
@@ -235,7 +214,11 @@ function TransactionForm() {
                       type="button"
                       className={`type-selector__option ${watchType === opt.value ? "active" : ""}`}
                       onClick={() => setValue("type", opt.value)}
-                      style={{ "--type-color": opt.color, "--type-bg": opt.bg, "--type-border": opt.border }}
+                      style={{
+                        "--type-color": opt.color,
+                        "--type-bg": opt.bg,
+                        "--type-border": opt.border,
+                      }}
                     >
                       <span className="type-selector__emoji">{opt.emoji}</span>
                       <span>{opt.label}</span>
@@ -252,7 +235,10 @@ function TransactionForm() {
                 <Controller
                   name="amount"
                   control={control}
-                  rules={{ validate: (v) => (v && v > 0) || "Jumlah harus lebih dari 0" }}
+                  rules={{
+                    validate: (v) =>
+                      (v && v > 0) || "Jumlah harus lebih dari 0",
+                  }}
                   render={({ field }) => (
                     <CurrencyInput
                       id="tx-amount"
@@ -263,7 +249,9 @@ function TransactionForm() {
                     />
                   )}
                 />
-                {errors.amount && <span className="form-error">{errors.amount.message}</span>}
+                {errors.amount && (
+                  <span className="form-error">{errors.amount.message}</span>
+                )}
               </div>
 
               {/* Category */}
@@ -278,10 +266,16 @@ function TransactionForm() {
                 >
                   <option value="">-- Pilih Kategori --</option>
                   {filteredCategories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
                   ))}
                 </select>
-                {errors.category_id && <span className="form-error">{errors.category_id.message}</span>}
+                {errors.category_id && (
+                  <span className="form-error">
+                    {errors.category_id.message}
+                  </span>
+                )}
               </div>
 
               {/* Date */}
@@ -289,14 +283,29 @@ function TransactionForm() {
                 <label className="form-label" htmlFor="tx-date">
                   Tanggal <span className="form-required">*</span>
                 </label>
-                <input id="tx-date" className="form-input" type="date" {...register("date", { required: "Tanggal wajib diisi" })} />
-                {errors.date && <span className="form-error">{errors.date.message}</span>}
+                <input
+                  id="tx-date"
+                  className="form-input"
+                  type="date"
+                  {...register("date", { required: "Tanggal wajib diisi" })}
+                />
+                {errors.date && (
+                  <span className="form-error">{errors.date.message}</span>
+                )}
               </div>
 
               {/* Note */}
               <div className="form-group">
-                <label className="form-label" htmlFor="tx-note">Catatan</label>
-                <textarea id="tx-note" className="form-input form-textarea" placeholder="Opsional: catatan transaksi..." rows={3} {...register("note")} />
+                <label className="form-label" htmlFor="tx-note">
+                  Catatan
+                </label>
+                <textarea
+                  id="tx-note"
+                  className="form-input form-textarea"
+                  placeholder="Opsional: catatan transaksi..."
+                  rows={3}
+                  {...register("note")}
+                />
               </div>
 
               {/* Location — using LocationPicker component */}
@@ -315,10 +324,19 @@ function TransactionForm() {
 
               {/* Actions */}
               <div className="tx-form-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => navigate("/transactions")}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => navigate("/transactions")}
+                >
                   Batal
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={submitting} id={isEdit ? "update-tx-btn" : "create-tx-btn"}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={submitting}
+                  id={isEdit ? "update-tx-btn" : "create-tx-btn"}
+                >
                   {submitting && <span className="spinner" />}
                   {isEdit ? "Simpan Perubahan" : "Tambah Transaksi"}
                 </button>
