@@ -6,6 +6,7 @@ import {
   getCategories,
   createCategory,
   updateCategory,
+  deleteCategory,
 } from "../../services/categoryService";
 const PlusIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
