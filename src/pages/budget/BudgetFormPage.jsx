@@ -7,6 +7,7 @@ import {
   getWorkingDays,
   formatCurrency,
 } from "../../utils/dateHelpers";
+import CurrencyInput from "../../components/CurrencyInput";
 import dayjs from "dayjs";
 
 const BackIcon = () => (
@@ -110,6 +111,13 @@ function BudgetFormPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleBudgetChange = (numericValue) => {
+    setForm((prev) => ({
+      ...prev,
+      total_budget: numericValue ? String(numericValue) : "",
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -206,17 +214,11 @@ function BudgetFormPage() {
               <label className="form-label" htmlFor="input-total-budget">
                 Total Budget
               </label>
-              <input
+              <CurrencyInput
                 id="input-total-budget"
-                className="form-input"
-                type="number"
-                name="total_budget"
-                placeholder="1500000"
-                value={form.total_budget}
-                onChange={handleChange}
-                min="0"
-                step="1000"
-                required
+                value={Number(form.total_budget) || 0}
+                onChange={handleBudgetChange}
+                placeholder="0"
               />
             </div>
 

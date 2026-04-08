@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { getCategories } from "../../services/categoryService";
+import { createTransaction } from "../../services/transactionService";
 import {
   getDashboard,
   getRecentTransactions,
@@ -9,6 +10,7 @@ import {
 import SummaryCard from "../../components/SummaryCard";
 import TransactionCard from "../../components/TransactionCard";
 import BudgetStatusBar from "../../components/BudgetStatusBar";
+import CurrencyInput from "../../components/CurrencyInput";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const IncomeIcon = () => (
@@ -67,32 +69,37 @@ function DashboardPage() {
   const [quickCategoryError, setQuickCategoryError] = useState("");
   const [quickType, setQuickType] = useState("expense");
   const [quickCategoryId, setQuickCategoryId] = useState("");
+  const [quickAmount, setQuickAmount] = useState(0);
+  const [quickNote, setQuickNote] = useState("");
+  const [quickSubmitting, setQuickSubmitting] = useState(false);
+  const [quickSubmitError, setQuickSubmitError] = useState("");
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [dashRes, txRes] = await Promise.all([
+        getDashboard(),
+        getRecentTransactions(),
+      ]);
+      setDashboard(dashRes.data);
+      // Take last 5 transactions (most recent first)
+      const sorted = (txRes.data || []).sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
+      );
+      setTransactions(sorted.slice(0, 5));
+    } catch (err) {
+      setError("Gagal memuat data dashboard.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Fetch dashboard data on mount
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      setError("");
-      try {
-        const [dashRes, txRes] = await Promise.all([
-          getDashboard(),
-          getRecentTransactions(),
-        ]);
-        setDashboard(dashRes.data);
-        // Take last 5 transactions (most recent first)
-        const sorted = (txRes.data || []).sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at),
-        );
-        setTransactions(sorted.slice(0, 5));
-      } catch (err) {
-        setError("Gagal memuat data dashboard.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   useEffect(() => {
     if (!isModalOpen) return;
@@ -126,6 +133,16 @@ function DashboardPage() {
     };
   }, [isModalOpen, user?.id]);
 
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    setQuickAmount(0);
+    setQuickType("expense");
+    setQuickCategoryId("");
+    setQuickNote("");
+    setQuickSubmitError("");
+  }, [isModalOpen]);
+
   const quickFilteredCategories = useMemo(
     () =>
       quickCategories.filter(
@@ -145,6 +162,41 @@ function DashboardPage() {
       setQuickCategoryId("");
     }
   }, [quickFilteredCategories, quickCategoryId]);
+
+  const handleQuickSubmit = async () => {
+    if (quickAmount <= 0) {
+      setQuickSubmitError("Nominal harus lebih dari 0.");
+      return;
+    }
+
+    if (!quickCategoryId) {
+      setQuickSubmitError("Pilih kategori terlebih dahulu.");
+      return;
+    }
+
+    setQuickSubmitError("");
+    setQuickSubmitting(true);
+
+    try {
+      await createTransaction({
+        amount: Number(quickAmount),
+        type: quickType,
+        category_id: Number(quickCategoryId),
+        date: new Date().toISOString().split("T")[0],
+        note: quickNote.trim() || null,
+        latitude: null,
+        longitude: null,
+      });
+
+      setIsModalOpen(false);
+      await fetchData();
+    } catch (err) {
+      const msg = err.response?.data?.message || "Gagal menambahkan transaksi.";
+      setQuickSubmitError(msg);
+    } finally {
+      setQuickSubmitting(false);
+    }
+  };
 
   const totals = dashboard?.totals || {};
   const budgets = dashboard?.budgets || {};
@@ -341,10 +393,11 @@ function DashboardPage() {
               <div className="modal-body">
                 <div className="form-group">
                   <label className="form-label">Nominal</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    placeholder="Rp 0"
+                  <CurrencyInput
+                    id="quick-amount"
+                    value={quickAmount}
+                    onChange={setQuickAmount}
+                    placeholder="0"
                   />
                 </div>
                 <div className="form-group">
@@ -391,21 +444,30 @@ function DashboardPage() {
                     type="text"
                     className="form-input"
                     placeholder="Makan siang, belanja..."
+                    value={quickNote}
+                    onChange={(e) => setQuickNote(e.target.value)}
                   />
                 </div>
+                {quickSubmitError && (
+                  <span className="form-error">{quickSubmitError}</span>
+                )}
               </div>
               <div className="modal-footer">
                 <button
                   className="btn btn-secondary"
+                  type="button"
+                  disabled={quickSubmitting}
                   onClick={() => setIsModalOpen(false)}
                 >
                   Batal
                 </button>
                 <button
                   className="btn btn-primary"
-                  onClick={() => setIsModalOpen(false)}
+                  type="button"
+                  disabled={quickSubmitting || quickCategoryLoading}
+                  onClick={handleQuickSubmit}
                 >
-                  Simpan
+                  {quickSubmitting ? "Menyimpan..." : "Simpan"}
                 </button>
               </div>
             </div>

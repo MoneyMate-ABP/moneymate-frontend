@@ -60,7 +60,7 @@ function CurrencyInput({
 
   return (
     <div className={`currency-input ${error ? "currency-input--error" : ""}`}>
-      <span className="currency-input__prefix">Rp</span>
+      <span className="currency-input__prefix">Rp.</span>
       <input
         id={id}
         className="currency-input__field"
