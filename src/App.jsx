@@ -10,6 +10,7 @@ import TransactionList from "./pages/transactions/TransactionList.jsx";
 import TransactionForm from "./pages/transactions/TransactionForm.jsx";
 import TransactionDetail from "./pages/transactions/TransactionDetail.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import AppLayout from "./components/layout/AppLayout.jsx";
 import useAuthStore from "./store/authStore.js";
 
 /**
@@ -26,7 +27,7 @@ function PublicRoute({ children }) {
 function App() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public routes (no AppLayout) */}
       <Route
         path="/login"
         element={
@@ -44,90 +45,25 @@ function App() {
         }
       />
 
-      {/* Protected routes (without AppLayout) */}
+      {/* Protected routes — wrapped in AppLayout */}
       <Route
-        path="/"
         element={
           <ProtectedRoute>
-            <DashboardPage />
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
-      <Route
-        path="/budgets"
-        element={
-          <ProtectedRoute>
-            <BudgetListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/budgets/new"
-        element={
-          <ProtectedRoute>
-            <BudgetFormPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/budgets/:id/edit"
-        element={
-          <ProtectedRoute>
-            <BudgetFormPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/budgets/:id/status"
-        element={
-          <ProtectedRoute>
-            <DailyStatusPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/categories"
-        element={
-          <ProtectedRoute>
-            <CategoriesPage />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* ── Transaction Routes ────────────────────────── */}
-      <Route
-        path="/transactions"
-        element={
-          <ProtectedRoute>
-            <TransactionList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/transactions/add"
-        element={
-          <ProtectedRoute>
-            <TransactionForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/transactions/:id"
-        element={
-          <ProtectedRoute>
-            <TransactionDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/transactions/:id/edit"
-        element={
-          <ProtectedRoute>
-            <TransactionForm />
-          </ProtectedRoute>
-        }
-      />
+      >
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/budgets" element={<BudgetListPage />} />
+        <Route path="/budgets/new" element={<BudgetFormPage />} />
+        <Route path="/budgets/:id/edit" element={<BudgetFormPage />} />
+        <Route path="/budgets/:id/status" element={<DailyStatusPage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/transactions" element={<TransactionList />} />
+        <Route path="/transactions/add" element={<TransactionForm />} />
+        <Route path="/transactions/:id" element={<TransactionDetail />} />
+        <Route path="/transactions/:id/edit" element={<TransactionForm />} />
+      </Route>
 
       {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/" replace />} />
