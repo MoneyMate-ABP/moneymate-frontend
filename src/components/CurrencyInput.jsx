@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 /**
  * CurrencyInput — format Rp otomatis
@@ -31,6 +31,14 @@ function CurrencyInput({
   disabled,
 }) {
   const [display, setDisplay] = useState(value ? formatToRupiah(value) : "");
+
+  useEffect(() => {
+    if (value || value === 0) {
+      setDisplay(value ? formatToRupiah(value) : "");
+    } else {
+      setDisplay("");
+    }
+  }, [value]);
 
   // Sync display when value changes externally
   const handleFocus = useCallback(() => {
