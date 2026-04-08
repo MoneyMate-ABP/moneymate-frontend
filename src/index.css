@@ -3825,6 +3825,45 @@ a:hover {
   height: 14px;
 }
 
+.tx-detail__row--location {
+  align-items: flex-start;
+}
+
+.tx-detail__location-preview {
+  width: min(360px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.tx-detail__location-name {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.tx-detail__location-map {
+  width: 100%;
+  min-height: 150px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(108, 99, 255, 0.18);
+  background: rgba(108, 99, 255, 0.06);
+}
+
+.tx-detail__location-map iframe {
+  width: 100%;
+  height: 150px;
+  border: 0;
+  display: block;
+}
+
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE — TRANSACTIONS
    ═══════════════════════════════════════════════════════════ */
@@ -3917,6 +3956,11 @@ a:hover {
 
   .tx-detail__value {
     text-align: left;
+  }
+
+  .tx-detail__location-preview {
+    width: 100%;
+    align-items: stretch;
   }
 }
 

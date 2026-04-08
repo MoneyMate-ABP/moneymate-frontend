@@ -6,6 +6,7 @@ import {
 } from "../../services/transactionService";
 import CategoryBadge from "../../components/CategoryBadge";
 import ConfirmModal from "../../components/ConfirmModal";
+import { getLocationName } from "../../utils/locationLookup";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const BackIcon = () => (
@@ -121,6 +122,8 @@ function TransactionDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState(null);
+  const [locationName, setLocationName] = useState("");
+  const [locationLoading, setLocationLoading] = useState(false);
 
   // Delete modal
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -164,6 +167,35 @@ function TransactionDetail() {
   const mapsUrl = hasLocation
     ? `https://www.google.com/maps?q=${transaction.latitude},${transaction.longitude}`
     : null;
+  const embedMapsUrl = hasLocation
+    ? `https://maps.google.com/maps?q=${transaction.latitude},${transaction.longitude}&z=16&output=embed`
+    : null;
+
+  useEffect(() => {
+    if (!hasLocation) {
+      setLocationName("");
+      setLocationLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    (async () => {
+      setLocationLoading(true);
+      const name = await getLocationName(
+        transaction.latitude,
+        transaction.longitude,
+      );
+      if (active) {
+        setLocationName(name || "");
+        setLocationLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [hasLocation, transaction?.latitude, transaction?.longitude]);
 
   return (
     <div className="page-container">
@@ -273,23 +305,39 @@ function TransactionDetail() {
                 )}
 
                 {hasLocation && (
-                  <div className="tx-detail__row">
+                  <div className="tx-detail__row tx-detail__row--location">
                     <div className="tx-detail__row-left">
                       <span className="tx-detail__row-icon">
                         <MapPinIcon />
                       </span>
                       <span className="tx-detail__label">Lokasi</span>
                     </div>
-                    <a
-                      href={mapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="tx-detail__location-link"
-                      id="tx-maps-link"
-                    >
-                      <MapPinIcon />
-                      Lihat di Google Maps
-                    </a>
+                    <div className="tx-detail__location-preview">
+                      <div className="tx-detail__location-name">
+                        {locationLoading
+                          ? "Memuat nama lokasi..."
+                          : locationName ||
+                            `${Number(transaction.latitude).toFixed(6)}, ${Number(transaction.longitude).toFixed(6)}`}
+                      </div>
+                      <div className="tx-detail__location-map">
+                        <iframe
+                          title="Preview peta lokasi transaksi"
+                          src={embedMapsUrl}
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                        />
+                      </div>
+                      <a
+                        href={mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tx-detail__location-link"
+                        id="tx-maps-link"
+                      >
+                        <MapPinIcon />
+                        Lihat di Google Maps
+                      </a>
+                    </div>
                   </div>
                 )}
               </div>
