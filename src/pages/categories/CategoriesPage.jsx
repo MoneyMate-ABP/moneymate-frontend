@@ -6,25 +6,7 @@ import {
   getCategories,
   createCategory,
   updateCategory,
-  deleteCategory,
 } from "../../services/categoryService";
-
-/* ── SVG Icons ─────────────────────────────────────────── */
-const WalletIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-    <line x1="1" y1="10" x2="23" y2="10" />
-  </svg>
-);
-
-const LogoutIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    <polyline points="16 17 21 12 16 7" />
-    <line x1="21" y1="12" x2="9" y2="12" />
-  </svg>
-);
-
 const PlusIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="12" y1="5" x2="12" y2="19" />
@@ -226,7 +208,6 @@ function DeleteModal({ isOpen, onClose, onConfirm, categoryName, isSubmitting })
 function CategoriesPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -268,16 +249,6 @@ function CategoriesPage() {
     fetchCategories();
   }, [fetchCategories]);
 
-  // Logout handler
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-    } catch {
-      // Even if backend logout fails, clear local state
-    }
-    logout();
-    navigate("/login", { replace: true });
-  };
 
   // Create / Update
   const handleSubmit = async ({ name, type }) => {
@@ -344,39 +315,8 @@ function CategoriesPage() {
     return matchesType && matchesSearch;
   });
 
-  const today = new Date().toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
   return (
-    <div className="dashboard-layout">
-      {/* ── Header ──────────────────────────────────────── */}
-      <header className="dashboard-header">
-        <div className="dashboard-header__left">
-          <div className="dashboard-header__logo">
-            <WalletIcon />
-          </div>
-          <div>
-            <h2>MoneyMate</h2>
-            <span className="dashboard-header__date">{today}</span>
-          </div>
-        </div>
-        <div className="dashboard-header__right">
-          <div className="dashboard-header__user">
-            <div className="dashboard-header__avatar">
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
-            <span className="dashboard-header__name">{user?.name}</span>
-          </div>
-          <button className="btn-logout" onClick={handleLogout} id="logout-btn">
-            <LogoutIcon />
-            <span>Logout</span>
-          </button>
-        </div>
-      </header>
+    <div className="page-container">
 
       {/* ── Toast Notification ──────────────────────────── */}
       {toast && (
