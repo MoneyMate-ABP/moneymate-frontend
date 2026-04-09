@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { logoutUser } from "../../services/authService";
@@ -6,6 +6,7 @@ import { getDashboard, getRecentTransactions } from "../../services/dashboardSer
 import SummaryCard from "../../components/SummaryCard";
 import TransactionCard from "../../components/TransactionCard";
 import BudgetStatusBar from "../../components/BudgetStatusBar";
+import TransactionModal from "../../components/TransactionModal";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const WalletIcon = () => (
@@ -55,31 +56,32 @@ function DashboardPage() {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch dashboard data on mount
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      setError("");
-      try {
-        const [dashRes, txRes] = await Promise.all([
-          getDashboard(),
-          getRecentTransactions(),
-        ]);
-        setDashboard(dashRes.data);
-        // Take last 5 transactions (most recent first)
-        const sorted = (txRes.data || []).sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        );
-        setTransactions(sorted.slice(0, 5));
-      } catch (err) {
-        setError("Gagal memuat data dashboard.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+  // Fetch dashboard data
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [dashRes, txRes] = await Promise.all([
+        getDashboard(),
+        getRecentTransactions(),
+      ]);
+      setDashboard(dashRes.data);
+      // Take last 5 transactions (most recent first)
+      const sorted = (txRes.data || []).sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+      setTransactions(sorted.slice(0, 5));
+    } catch (err) {
+      setError("Gagal memuat data dashboard.");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleLogout = async () => {
     try {
@@ -281,37 +283,11 @@ function DashboardPage() {
         )}
 
         {/* ── Tambah Transaksi Modal ─────────────────── */}
-        {isModalOpen && (
-          <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>Tambah Transaksi</h3>
-                <button className="btn-close" onClick={() => setIsModalOpen(false)}>✕</button>
-              </div>
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">Nominal</label>
-                  <input type="number" className="form-input" placeholder="Rp 0" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Tipe</label>
-                  <select className="form-input">
-                    <option value="expense">Pengeluaran</option>
-                    <option value="income">Pemasukan</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Keterangan</label>
-                  <input type="text" className="form-input" placeholder="Makan siang, belanja..." />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Batal</button>
-                <button className="btn btn-primary" onClick={() => setIsModalOpen(false)}>Simpan</button>
-              </div>
-            </div>
-          </div>
-        )}
+        <TransactionModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={fetchData}
+        />
       </main>
     </div>
   );
