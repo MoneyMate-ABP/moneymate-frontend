@@ -10,6 +10,7 @@ import {
 import { getCategories } from "../../services/categoryService";
 import CurrencyInput from "../../components/CurrencyInput";
 import LocationPicker from "../../components/LocationPicker";
+import { parseApiError } from "../../utils/validation";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const WalletIcon = () => (
@@ -148,7 +149,7 @@ function TransactionForm() {
       }
       setTimeout(() => navigate("/transactions"), 800);
     } catch (err) {
-      const msg = err.response?.data?.message || "Terjadi kesalahan.";
+      const msg = parseApiError(err, "Terjadi kesalahan.");
       showToast(msg, "error");
     } finally {
       setSubmitting(false);

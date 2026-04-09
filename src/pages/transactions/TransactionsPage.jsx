@@ -13,6 +13,7 @@ import CategoryBadge from "../../components/CategoryBadge";
 import ConfirmModal from "../../components/ConfirmModal";
 import TransactionFormModal from "../../components/TransactionFormModal";
 import { getLocationName } from "../../utils/locationLookup";
+import { parseApiError } from "../../utils/validation";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const WalletIcon = () => (
@@ -375,7 +376,7 @@ function TransactionsPage() {
       setEditingTx(null);
       await fetchData();
     } catch (err) {
-      const msg = err.response?.data?.message || "Terjadi kesalahan.";
+      const msg = parseApiError(err, "Terjadi kesalahan.");
       showToast(msg, "error");
     } finally {
       setSubmitting(false);

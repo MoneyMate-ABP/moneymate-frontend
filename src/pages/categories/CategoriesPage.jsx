@@ -8,6 +8,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "../../services/categoryService";
+import { parseApiError } from "../../utils/validation";
 const PlusIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="12" y1="5" x2="12" y2="19" />
@@ -55,7 +56,14 @@ const typeConfig = {
 const typeEmoji = { expense: "💸", income: "💰", both: "🔄" };
 
 /* ── Category Modal Component ──────────────────────────── */
-function CategoryModal({ isOpen, onClose, onSubmit, initialData, isSubmitting }) {
+function CategoryModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData,
+  isSubmitting,
+  submitError,
+}) {
   const [name, setName] = useState("");
   const [type, setType] = useState("expense");
   const [error, setError] = useState("");
@@ -90,20 +98,29 @@ function CategoryModal({ isOpen, onClose, onSubmit, initialData, isSubmitting })
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{isEdit ? "Edit Kategori" : "Tambah Kategori"}</h3>
-          <button className="modal-close" onClick={onClose} id="modal-close-btn">
+          <button
+            className="modal-close"
+            onClick={onClose}
+            id="modal-close-btn"
+          >
             <CloseIcon />
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          {error && (
+          {(error || submitError) && (
             <div className="alert alert-error">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <line x1="15" y1="9" x2="9" y2="15" />
                 <line x1="9" y1="9" x2="15" y2="15" />
               </svg>
-              {error}
+              {error || submitError}
             </div>
           )}
 
@@ -221,6 +238,7 @@ function CategoriesPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingCategory, setDeletingCategory] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [modalSubmitError, setModalSubmitError] = useState("");
 
   // Filter
   const [filterType, setFilterType] = useState("all");
@@ -253,6 +271,7 @@ function CategoriesPage() {
 
   // Create / Update
   const handleSubmit = async ({ name, type }) => {
+    setModalSubmitError("");
     setSubmitting(true);
     try {
       if (editingCategory) {
@@ -266,8 +285,8 @@ function CategoriesPage() {
       setEditingCategory(null);
       await fetchCategories();
     } catch (err) {
-      const msg = err.response?.data?.message || "Terjadi kesalahan.";
-      showToast(msg, "error");
+      const msg = parseApiError(err, "Terjadi kesalahan.");
+      setModalSubmitError(msg);
     } finally {
       setSubmitting(false);
     }
@@ -293,12 +312,14 @@ function CategoriesPage() {
 
   // Open edit modal
   const openEdit = (cat) => {
+    setModalSubmitError("");
     setEditingCategory(cat);
     setModalOpen(true);
   };
 
   // Open create modal
   const openCreate = () => {
+    setModalSubmitError("");
     setEditingCategory(null);
     setModalOpen(true);
   };
@@ -318,7 +339,6 @@ function CategoriesPage() {
 
   return (
     <div className="page-container">
-
       {/* ── Toast Notification ──────────────────────────── */}
       {toast && (
         <div className={`toast toast--${toast.type}`} id="toast-notification">
@@ -365,7 +385,15 @@ function CategoriesPage() {
             {/* ── Toolbar: Search + Filter + Add ────────── */}
             <div className="category-toolbar" id="category-toolbar">
               <div className="category-toolbar__search">
-                <svg className="category-toolbar__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  className="category-toolbar__search-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
@@ -392,7 +420,11 @@ function CategoriesPage() {
                 ))}
               </div>
 
-              <button className="btn btn-primary category-toolbar__add" onClick={openCreate} id="add-category-btn">
+              <button
+                className="btn btn-primary category-toolbar__add"
+                onClick={openCreate}
+                id="add-category-btn"
+              >
                 <PlusIcon />
                 <span>Tambah</span>
               </button>
@@ -407,7 +439,11 @@ function CategoriesPage() {
             {filtered.length === 0 ? (
               <div className="dashboard-empty">
                 <span className="dashboard-empty__icon">📂</span>
-                <p>{searchQuery || filterType !== "all" ? "Tidak ada kategori yang cocok." : "Belum ada kategori."}</p>
+                <p>
+                  {searchQuery || filterType !== "all"
+                    ? "Tidak ada kategori yang cocok."
+                    : "Belum ada kategori."}
+                </p>
                 <span className="dashboard-empty__sub">
                   {searchQuery || filterType !== "all"
                     ? "Coba ubah filter atau kata kunci pencarian."
@@ -427,12 +463,17 @@ function CategoriesPage() {
                       <div className="category-card__left">
                         <div
                           className="category-card__emoji"
-                          style={{ background: cfg.bg, borderColor: cfg.border }}
+                          style={{
+                            background: cfg.bg,
+                            borderColor: cfg.border,
+                          }}
                         >
                           {typeEmoji[cat.type] || "📁"}
                         </div>
                         <div className="category-card__info">
-                          <span className="category-card__name">{cat.name}</span>
+                          <span className="category-card__name">
+                            {cat.name}
+                          </span>
                           <span
                             className="category-card__type"
                             style={{
@@ -478,10 +519,12 @@ function CategoriesPage() {
         onClose={() => {
           setModalOpen(false);
           setEditingCategory(null);
+          setModalSubmitError("");
         }}
         onSubmit={handleSubmit}
         initialData={editingCategory}
         isSubmitting={submitting}
+        submitError={modalSubmitError}
       />
 
       <DeleteModal
