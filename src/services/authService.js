@@ -8,6 +8,69 @@ import {
 import { auth, googleProvider } from "../../firebase.config";
 
 const REDIRECT_PENDING_KEY = "mm_google_redirect_pending";
+const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_RATE_LIMIT_MAX = 7;
+const AUTH_RATE_LIMIT_KEY_PREFIX = "mm_auth_rl";
+
+function createClientGuardError(status, message, config, extraData = {}) {
+  const error = new Error(message);
+  error.isAxiosError = true;
+  error.config = config;
+  error.response = {
+    status,
+    data: { message, ...extraData },
+    headers: {},
+  };
+  return error;
+}
+
+function readAuthAttempts(key) {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed = JSON.parse(raw || "[]");
+    return Array.isArray(parsed)
+      ? parsed.filter((n) => Number.isFinite(n))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeAuthAttempts(key, timestamps) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(timestamps));
+  } catch {
+    // Ignore storage access issues.
+  }
+}
+
+function enforceAuthRateLimit(endpointName) {
+  const now = Date.now();
+  const key = `${AUTH_RATE_LIMIT_KEY_PREFIX}:${endpointName}`;
+  const activeAttempts = readAuthAttempts(key).filter(
+    (ts) => now - ts <= AUTH_RATE_LIMIT_WINDOW_MS,
+  );
+
+  if (activeAttempts.length >= AUTH_RATE_LIMIT_MAX) {
+    const retryAfterSeconds = Math.ceil(
+      (AUTH_RATE_LIMIT_WINDOW_MS - (now - activeAttempts[0])) / 1000,
+    );
+    throw createClientGuardError(
+      429,
+      "Batas percobaan autentikasi tercapai. Coba lagi nanti.",
+      {
+        url: `/api/auth/${endpointName}`,
+        method: "post",
+      },
+      { retryAfterSeconds },
+    );
+  }
+
+  activeAttempts.push(now);
+  writeAuthAttempts(key, activeAttempts);
+}
 
 function setRedirectPending(value) {
   if (typeof window === "undefined") return;
@@ -92,6 +155,8 @@ async function exchangeGoogleTokenToBackend(firebaseUser) {
  * Register a new user (local auth)
  */
 export async function registerUser({ name, email, password }) {
+  enforceAuthRateLimit("register");
+
   const res = await api.post("/api/auth/register", {
     name: name.trim(),
     email: email.trim().toLowerCase(),
@@ -104,6 +169,8 @@ export async function registerUser({ name, email, password }) {
  * Login with email + password (local auth)
  */
 export async function loginUser({ email, password }) {
+  enforceAuthRateLimit("login");
+
   const res = await api.post("/api/auth/login", {
     email: email.trim().toLowerCase(),
     password,

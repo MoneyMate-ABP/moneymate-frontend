@@ -2638,6 +2638,8 @@ a:hover {
   top: 80px;
   left: 50%;
   transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 520px;
   padding: 12px 24px;
   border-radius: var(--radius-md);
   font-size: 0.8125rem;
@@ -2646,7 +2648,10 @@ a:hover {
   animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1),
              toastFadeOut 0.3s ease-in 2.7s forwards;
   pointer-events: none;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
   box-shadow: var(--shadow-lg);
 }
 

@@ -61,6 +61,31 @@ export function validateName(name) {
  * Handles JSON array validation errors from Zod.
  */
 export function parseApiError(err, fallback = "Terjadi kesalahan. Coba lagi.") {
+  const status = err?.response?.status;
+  const url = err?.config?.url || "";
+  const retryAfterHeader = err?.response?.headers?.["retry-after"];
+  const retryAfterBody = err?.response?.data?.retryAfterSeconds;
+
+  if (status === 429) {
+    const retrySeconds = Number(retryAfterHeader || retryAfterBody || 0);
+    if (Number.isFinite(retrySeconds) && retrySeconds > 0) {
+      return `Terlalu banyak percobaan. Coba lagi dalam ${retrySeconds} detik.`;
+    }
+    return "Terlalu banyak percobaan. Coba lagi beberapa saat lagi.";
+  }
+
+  if (status === 413) {
+    return "Data terlalu besar. Maksimum ukuran payload JSON adalah 10KB.";
+  }
+
+  if (
+    status === 409 &&
+    err?.config?.method?.toLowerCase() === "post" &&
+    (url.includes("/api/transactions") || url.includes("/api/budget-periods"))
+  ) {
+    return "Data duplikat terdeteksi. Tunggu 60 detik sebelum mengirim data yang sama.";
+  }
+
   let msg = err.response?.data?.message || err.message || fallback;
 
   // Handle Zod validation errors that come as JSON string arrays

@@ -11,6 +11,7 @@ import SummaryCard from "../../components/SummaryCard";
 import TransactionCard from "../../components/TransactionCard";
 import BudgetStatusBar from "../../components/BudgetStatusBar";
 import CurrencyInput from "../../components/CurrencyInput";
+import { parseApiError } from "../../utils/validation";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const IncomeIcon = () => (
@@ -191,7 +192,7 @@ function DashboardPage() {
       setIsModalOpen(false);
       await fetchData();
     } catch (err) {
-      const msg = err.response?.data?.message || "Gagal menambahkan transaksi.";
+      const msg = parseApiError(err, "Gagal menambahkan transaksi.");
       setQuickSubmitError(msg);
     } finally {
       setQuickSubmitting(false);

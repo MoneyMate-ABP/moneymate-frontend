@@ -10,6 +10,7 @@ import {
 import { getCategories } from "../../services/categoryService";
 import CurrencyInput from "../../components/CurrencyInput";
 import LocationPicker from "../../components/LocationPicker";
+import { parseApiError } from "../../utils/validation";
 
 /**
  * TransactionFormPage — Add & Edit in one component
@@ -96,7 +97,10 @@ export default function TransactionFormPage() {
         navigate(newId ? `/transactions/${newId}` : "/transactions");
       }
     } catch (e) {
-      const msg = e?.response?.data?.message || "Gagal menyimpan transaksi. Silakan coba lagi.";
+      const msg = parseApiError(
+        e,
+        "Gagal menyimpan transaksi. Silakan coba lagi.",
+      );
       setSubmitError(msg);
     }
   }

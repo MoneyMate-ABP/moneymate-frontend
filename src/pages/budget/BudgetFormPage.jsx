@@ -9,6 +9,7 @@ import {
 } from "../../utils/dateHelpers";
 import CurrencyInput from "../../components/CurrencyInput";
 import dayjs from "dayjs";
+import { parseApiError } from "../../utils/validation";
 
 const BackIcon = () => (
   <svg
@@ -139,9 +140,7 @@ function BudgetFormPage() {
       }
       navigate("/budgets");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Gagal menyimpan budget period."
-      );
+      setError(parseApiError(err, "Gagal menyimpan budget period."));
     } finally {
       setSubmitting(false);
     }
