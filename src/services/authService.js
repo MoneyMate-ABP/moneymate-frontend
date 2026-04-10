@@ -3,7 +3,6 @@ import {
   getRedirectResult,
   onAuthStateChanged,
   signInWithPopup,
-  signInWithRedirect,
 } from "firebase/auth";
 import { auth, googleProvider } from "../../firebase.config";
 
@@ -85,6 +84,10 @@ function setRedirectPending(value) {
   }
 }
 
+export function clearPendingGoogleRedirect() {
+  setRedirectPending(false);
+}
+
 export function hasPendingGoogleRedirect() {
   if (typeof window === "undefined") return false;
   try {
@@ -134,17 +137,14 @@ function shouldUseRedirectFlow() {
     /iPad|iPhone|iPod/.test(ua) ||
     (ua.includes("Macintosh") && "ontouchend" in document);
   const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
-  const isStandalone =
-    window.navigator.standalone === true ||
-    window.matchMedia?.("(display-mode: standalone)")?.matches === true;
 
-  // iOS PWA standalone often fails to restore redirect auth state reliably.
-  // Prefer popup flow there and reserve redirect for Safari browser tabs.
-  if (isStandalone) {
+  // Safari on iOS (browser tab and standalone PWA) is unreliable for Firebase redirect flow
+  // in this app's context. Always use popup flow there.
+  if (isIOS && isSafari) {
     return false;
   }
 
-  return isIOS && isSafari;
+  return false;
 }
 
 function normalizeAuthPayload(payload) {
@@ -202,13 +202,9 @@ export async function loginUser({ email, password }) {
  * Google Sign-In: opens Firebase popup, gets ID token, sends to backend
  */
 export async function loginWithGoogle() {
-  if (shouldUseRedirectFlow()) {
-    setRedirectPending(true);
-    await signInWithRedirect(auth, googleProvider);
-    return { redirect: true };
-  }
+  // Ensure stale redirect markers from previous versions do not trigger loop on login page.
+  setRedirectPending(false);
 
-  // Popup remains default for desktop and non-Safari iOS browsers.
   const result = await signInWithPopup(auth, googleProvider);
   return exchangeGoogleTokenToBackend(result.user);
 }
@@ -217,6 +213,13 @@ export async function loginWithGoogle() {
  * Complete redirect-based Google Sign-In after returning from provider page.
  */
 export async function completeGoogleRedirectLogin() {
+  if (!hasPendingGoogleRedirect()) return null;
+
+  if (!shouldUseRedirectFlow()) {
+    setRedirectPending(false);
+    return null;
+  }
+
   const result = await getRedirectResultWithTimeout();
   const redirectUser = result?.user || null;
 
@@ -224,8 +227,6 @@ export async function completeGoogleRedirectLogin() {
     setRedirectPending(false);
     return exchangeGoogleTokenToBackend(redirectUser);
   }
-
-  if (!hasPendingGoogleRedirect()) return null;
 
   const fallbackUser = auth.currentUser || (await waitForAuthUser());
   if (!fallbackUser) {
