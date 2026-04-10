@@ -90,6 +90,19 @@ const ReceiptScanIcon = () => (
     <line x1="8" y1="16" x2="12" y2="16" />
   </svg>
 );
+const UploadCloudIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 17.5A4.5 4.5 0 0 0 18 9h-1.2A6 6 0 0 0 5.2 10.1 4 4 0 0 0 6 18h14" />
+    <polyline points="12 11 12 21" />
+    <polyline points="8.5 14.5 12 11 15.5 14.5" />
+  </svg>
+);
+const FileAttachmentIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z" />
+    <polyline points="14 2 14 8 20 8" />
+  </svg>
+);
 
 /* ── Helpers ────────────────────────────────────────────── */
 const formatCurrency = (amount) =>
@@ -108,6 +121,19 @@ const formatDate = (dateStr) =>
   });
 
 const getTodayDate = () => new Date().toISOString().slice(0, 10);
+
+const formatFileSize = (bytes = 0) => {
+  if (!bytes || bytes <= 0) return "0 B";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+const getFileTypeLabel = (mimeType = "") => {
+  if (mimeType === "application/pdf") return "PDF";
+  if (mimeType.startsWith("image/")) return "GAMBAR";
+  return "FILE";
+};
 
 const normalizeKeyword = (value) =>
   String(value || "")
@@ -293,6 +319,11 @@ function TransactionList() {
   const handleScanFileChange = (event) => {
     const file = event.target.files?.[0] || null;
     setScanFile(file);
+    setScanError("");
+  };
+
+  const handleRemoveScanFile = () => {
+    setScanFile(null);
     setScanError("");
   };
 
@@ -1055,22 +1086,49 @@ function TransactionList() {
                 Upload foto struk fisik atau file struk digital. AI akan isi
                 draft transaksi otomatis, lalu kamu bisa edit sebelum simpan.
               </p>
-              <div className="form-group">
-                <label className="form-label" htmlFor="receipt-upload-input">
-                  File Struk
-                </label>
-                <input
-                  id="receipt-upload-input"
-                  type="file"
-                  className="form-input"
-                  accept="image/jpeg,image/png,image/webp,application/pdf"
-                  onChange={handleScanFileChange}
-                  disabled={scanLoading}
-                />
-              </div>
+
+              <label
+                className={`receipt-upload ${scanFile ? "receipt-upload--selected" : ""}`}
+                htmlFor="receipt-upload-input"
+              >
+                <div className="receipt-upload__icon">
+                  <UploadCloudIcon />
+                </div>
+                <div className="receipt-upload__text">
+                  <strong>{scanFile ? "Ganti file struk" : "Pilih file struk"}</strong>
+                  <span>JPG, PNG, WEBP, atau PDF. Maksimum 5MB.</span>
+                </div>
+              </label>
+              <input
+                id="receipt-upload-input"
+                type="file"
+                className="receipt-upload__input"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={handleScanFileChange}
+                disabled={scanLoading}
+              />
+
               {scanFile && (
                 <div className="receipt-modal__file">
-                  <strong>File dipilih:</strong> {scanFile.name}
+                  <div className="receipt-modal__file-main">
+                    <div className="receipt-modal__file-icon">
+                      <FileAttachmentIcon />
+                    </div>
+                    <div className="receipt-modal__file-meta">
+                      <strong className="receipt-modal__file-name">{scanFile.name}</strong>
+                      <span>
+                        {getFileTypeLabel(scanFile.type)} • {formatFileSize(scanFile.size)}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="receipt-modal__file-remove"
+                    onClick={handleRemoveScanFile}
+                    disabled={scanLoading}
+                  >
+                    Hapus
+                  </button>
                 </div>
               )}
               {scanError && <p className="form-error">{scanError}</p>}
