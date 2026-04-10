@@ -129,7 +129,8 @@ export default function usePushNotification() {
 
       setIsSubscribed(true);
       return true;
-    } catch {
+    } catch (error) {
+      console.error("[Push] subscribe failed:", error);
       return false;
     }
   }, [isDev]);
@@ -173,7 +174,8 @@ export default function usePushNotification() {
 
       setIsSubscribed(false);
       return true;
-    } catch {
+    } catch (error) {
+      console.error("[Push] unsubscribe failed:", error);
       return false;
     }
   }, [isDev]);
