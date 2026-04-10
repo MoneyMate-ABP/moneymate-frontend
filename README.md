@@ -232,7 +232,7 @@ VitePWA({
 - Installable (Add to Home Screen)
 - Offline fallback page
 - Cache static assets via service worker
-- Web Push Notification (reminder jam 20:00)
+- Web Push Notification (reminder budget harian jam 08:00)
 
 ---
 
@@ -243,9 +243,15 @@ Flow:
 1. User izinkan notifikasi (Notification.requestPermission)
 2. Subscribe ke push service → dapat subscription object
 3. Kirim subscription ke backend → POST /api/notifications/subscribe
-4. Backend jadwalkan push jam 20:00 via node-cron + web-push
+4. Backend jadwalkan push jam 08:00 via node-cron + web-push
 5. Service worker handle notifikasi masuk
 ```
+
+Riwayat notifikasi di navbar:
+
+- Bell icon menampilkan unread badge (red dot/number)
+- Dropdown menampilkan 5 notifikasi terakhir dari backend
+- Tiap item bisa ditandai baca, atau gunakan tombol "Tandai semua dibaca"
 
 ---
 
