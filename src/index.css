@@ -3427,6 +3427,31 @@ a:hover {
   flex-shrink: 0;
 }
 
+.tx-toolbar__scan {
+  width: auto !important;
+  padding: 10px 16px !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.tx-toolbar__scan:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.tx-toolbar__scan svg {
+  width: 16px;
+  height: 16px;
+}
+
 .tx-toolbar__add svg {
   width: 16px;
   height: 16px;
@@ -4008,6 +4033,60 @@ a:hover {
   opacity: 0;
 }
 
+/* ── Receipt Scan Modals ─────────────────────────────── */
+.receipt-modal {
+  max-width: 560px;
+}
+
+.receipt-modal--review {
+  max-width: 600px;
+}
+
+.receipt-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.receipt-modal__hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.receipt-modal__file {
+  margin-top: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  background: rgba(108, 99, 255, 0.08);
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  word-break: break-word;
+}
+
+.receipt-modal__footer .btn {
+  min-width: 140px;
+}
+
+.receipt-ai-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.receipt-ai-meta span {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(108, 99, 255, 0.18);
+  background: rgba(108, 99, 255, 0.08);
+}
+
 /* ── Transaction Detail Modal ──────────────────────────── */
 .tx-detail__amount-hero {
   text-align: center;
@@ -4178,6 +4257,10 @@ a:hover {
     width: 100% !important;
   }
 
+  .tx-toolbar__scan {
+    width: 100% !important;
+  }
+
   .tx-toolbar__filter span:not(.tx-toolbar__filter-badge) {
     display: none;
   }
@@ -4219,6 +4302,14 @@ a:hover {
   }
 
   .location-row__fields {
+    width: 100%;
+  }
+
+  .receipt-modal__footer {
+    flex-direction: column;
+  }
+
+  .receipt-modal__footer .btn {
     width: 100%;
   }
 }

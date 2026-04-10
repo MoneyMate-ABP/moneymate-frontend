@@ -40,3 +40,19 @@ export async function deleteTransaction(id) {
   const res = await api.delete(`/api/transactions/${id}`);
   return res.data; // { message }
 }
+
+/**
+ * Analyze uploaded receipt with AI and return extracted transaction draft
+ */
+export async function scanReceipt(file) {
+  const formData = new FormData();
+  formData.append("receipt", file);
+
+  const res = await api.post("/api/transactions/receipt-scan", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return res.data; // { message, data }
+}
