@@ -121,6 +121,23 @@ export default function ProfilePage() {
     navigate("/login", { replace: true });
   };
 
+  const handleTestNotification = async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+
+      await registration.showNotification("Test notifikasi MoneyMate", {
+        body: "Notifikasi aktif. Pengingat harian jam 08:00 siap digunakan.",
+        icon: "/favicon.svg",
+        badge: "/favicon.svg",
+      });
+
+      toast.success("Test notifikasi berhasil dikirim.");
+    } catch (error) {
+      console.error("[Push] test notification failed:", error);
+      toast.error("Gagal kirim test notifikasi.");
+    }
+  };
+
   return (
     <div className="page-container">
       <main className="dashboard-main">
@@ -187,6 +204,21 @@ export default function ProfilePage() {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              {isSubscribed && (
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  onClick={handleTestNotification}
+                  style={{
+                    width: "auto",
+                    padding: "8px 12px",
+                    fontSize: "0.75rem",
+                    borderRadius: "10px",
+                  }}
+                >
+                  Test
+                </button>
+              )}
               <label className="toggle-switch">
                 <input
                   type="checkbox"
