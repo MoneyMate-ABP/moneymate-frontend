@@ -5,6 +5,7 @@ import {
   updateBudgetPeriod,
   deleteBudgetPeriod,
   fetchAllDailyStatuses,
+  setDefaultBudgetPeriod,
 } from "../services/budgetService";
 
 const useBudgetStore = create((set, get) => ({
@@ -51,6 +52,17 @@ const useBudgetStore = create((set, get) => ({
     await deleteBudgetPeriod(id);
     set((s) => ({
       periods: s.periods.filter((p) => p.id !== id),
+    }));
+  },
+
+  /* ── Set Default ─────────────────────────────── */
+  setDefaultPeriod: async (id) => {
+    await setDefaultBudgetPeriod(id);
+    set((s) => ({
+      periods: s.periods.map((p) => ({
+        ...p,
+        is_default: p.id === id,
+      })),
     }));
   },
 

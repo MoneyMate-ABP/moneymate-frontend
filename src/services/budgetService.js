@@ -74,3 +74,11 @@ export async function fetchAllDailyStatuses(id, startDate, endDate) {
 
   return results;
 }
+
+/**
+ * Set a budget period as default.
+ */
+export async function setDefaultBudgetPeriod(id) {
+  const res = await api.post(`/api/budget-periods/${id}/set-default`);
+  return res.data;
+}

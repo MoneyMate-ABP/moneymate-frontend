@@ -10,19 +10,15 @@ export function isWeekend(date) {
   return day === 0 || day === 6;
 }
 
-/**
- * Count working days (Mon–Fri) between two dates (inclusive).
- * @param {string} startDate  YYYY-MM-DD
- * @param {string} endDate    YYYY-MM-DD
- * @returns {number}
- */
-export function getWorkingDays(startDate, endDate) {
+export function getWorkingDays(startDate, endDate, excludedDays = [0, 6]) {
   let count = 0;
   let current = dayjs(startDate);
   const end = dayjs(endDate);
 
   while (current.isBefore(end) || current.isSame(end, "day")) {
-    if (!isWeekend(current)) count++;
+    if (!excludedDays.includes(current.day())) {
+      count++;
+    }
     current = current.add(1, "day");
   }
   return count;

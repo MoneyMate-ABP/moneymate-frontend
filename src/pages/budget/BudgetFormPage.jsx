@@ -1,12 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
 import useBudgetStore from "../../store/budgetStore";
 import useAuthStore from "../../store/authStore";
 import { getCategories } from "../../services/categoryService";
-import {
-  getWorkingDays,
-  formatCurrency,
-} from "../../utils/dateHelpers";
+import { getWorkingDays, formatCurrency } from "../../utils/dateHelpers";
 import CurrencyInput from "../../components/CurrencyInput";
 import dayjs from "dayjs";
 import { parseApiError } from "../../utils/validation";
@@ -25,26 +23,50 @@ const BackIcon = () => (
   </svg>
 );
 
+const WEEKDAYS = [
+  { value: 0, label: "Minggu" },
+  { value: 1, label: "Senin" },
+  { value: 2, label: "Selasa" },
+  { value: 3, label: "Rabu" },
+  { value: 4, label: "Kamis" },
+  { value: 5, label: "Jumat" },
+  { value: 6, label: "Sabtu" }
+];
+
 function BudgetFormPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
   const userId = useAuthStore((s) => s.user?.id);
 
-  const { periods, createPeriod, updatePeriod, fetchPeriods } =
-    useBudgetStore();
+  const { periods, createPeriod, updatePeriod, fetchPeriods } = useBudgetStore();
 
   const [categories, setCategories] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const [form, setForm] = useState({
-    name: "",
-    total_budget: "",
-    start_date: dayjs().startOf("month").format("YYYY-MM-DD"),
-    end_date: dayjs().endOf("month").format("YYYY-MM-DD"),
-    category_id: "",
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    reset,
+    formState: { isSubmitting },
+  } = useForm({
+    defaultValues: {
+      name: "",
+      total_budget: "",
+      start_date: dayjs().startOf("month").format("YYYY-MM-DD"),
+      end_date: dayjs().endOf("month").format("YYYY-MM-DD"),
+      category_id: "",
+      excluded_weekdays: ["0", "6"], // default excluded: Sunday and Saturday
+    },
   });
+
+  // Watch fields for live preview
+  const watchedStartDate = watch("start_date");
+  const watchedEndDate = watch("end_date");
+  const watchedTotalBudget = watch("total_budget");
+  const watchedExcluded = watch("excluded_weekdays");
 
   // Load categories
   useEffect(() => {
@@ -56,80 +78,69 @@ function BudgetFormPage() {
   // If editing, populate form with existing period data
   useEffect(() => {
     if (isEdit) {
-      // Try from store first
       let period = periods.find((p) => p.id === Number(id));
-      if (period) {
-        setForm({
-          name: period.name,
-          total_budget: String(period.total_budget),
-          start_date: period.start_date,
-          end_date: period.end_date,
-          category_id: period.category_id ?? "",
+      
+      const applyData = (p) => {
+        reset({
+          name: p.name,
+          total_budget: String(p.total_budget),
+          start_date: p.start_date,
+          end_date: p.end_date,
+          category_id: p.category_id ?? "",
+          excluded_weekdays: Array.isArray(p.excluded_weekdays) 
+            ? p.excluded_weekdays.map(String) 
+            : ["0", "6"],
         });
+      };
+
+      if (period) {
+        applyData(period);
       } else {
-        // Fetch from server if not in store
         fetchPeriods().then(() => {
           const updated = useBudgetStore.getState().periods;
           const p = updated.find((p) => p.id === Number(id));
           if (p) {
-            setForm({
-              name: p.name,
-              total_budget: String(p.total_budget),
-              start_date: p.start_date,
-              end_date: p.end_date,
-              category_id: p.category_id ?? "",
-            });
+            applyData(p);
           }
         });
       }
     }
-  }, [isEdit, id, periods, fetchPeriods]);
+  }, [isEdit, id, periods, fetchPeriods, reset]);
 
   // Live preview calculations
   const preview = useMemo(() => {
-    const { start_date, end_date, total_budget } = form;
-    if (!start_date || !end_date || !total_budget) {
+    if (!watchedStartDate || !watchedEndDate || !watchedTotalBudget) {
       return { workingDays: 0, weekendDays: 0, dailyBudget: 0, totalDays: 0 };
     }
 
-    const start = dayjs(start_date);
-    const end = dayjs(end_date);
+    const start = dayjs(watchedStartDate);
+    const end = dayjs(watchedEndDate);
     if (end.isBefore(start)) {
       return { workingDays: 0, weekendDays: 0, dailyBudget: 0, totalDays: 0 };
     }
 
     const totalDays = end.diff(start, "day") + 1;
-    const workingDays = getWorkingDays(start_date, end_date);
+    // ensure excludedArray is an array of numbers
+    const excludedArray = Array.isArray(watchedExcluded) ? watchedExcluded.map(Number) : [];
+    
+    const workingDays = getWorkingDays(watchedStartDate, watchedEndDate, excludedArray);
     const weekendDays = totalDays - workingDays;
-    const budget = parseFloat(total_budget) || 0;
+    const budget = parseFloat(watchedTotalBudget) || 0;
     const dailyBudget = workingDays > 0 ? budget / workingDays : 0;
 
     return { workingDays, weekendDays, dailyBudget, totalDays };
-  }, [form]);
+  }, [watchedStartDate, watchedEndDate, watchedTotalBudget, watchedExcluded]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleBudgetChange = (numericValue) => {
-    setForm((prev) => ({
-      ...prev,
-      total_budget: numericValue ? String(numericValue) : "",
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setError(null);
-    setSubmitting(true);
 
     const payload = {
-      name: form.name.trim(),
-      total_budget: parseFloat(form.total_budget),
-      start_date: form.start_date,
-      end_date: form.end_date,
-      category_id: form.category_id ? Number(form.category_id) : null,
+      name: data.name.trim(),
+      total_budget: parseFloat(data.total_budget),
+      start_date: data.start_date,
+      end_date: data.end_date,
+      category_id: data.category_id ? Number(data.category_id) : null,
+      excluded_weekdays: data.excluded_weekdays ? data.excluded_weekdays.map(Number) : [],
     };
 
     try {
@@ -141,8 +152,6 @@ function BudgetFormPage() {
       navigate("/budgets");
     } catch (err) {
       setError(parseApiError(err, "Gagal menyimpan budget period."));
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -172,7 +181,7 @@ function BudgetFormPage() {
         <div className="budget-form-container">
           <form
             className="budget-form"
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             id="budget-form"
           >
             {error && (
@@ -201,11 +210,8 @@ function BudgetFormPage() {
                 id="input-name"
                 className="form-input"
                 type="text"
-                name="name"
                 placeholder="Contoh: Budget April 2026"
-                value={form.name}
-                onChange={handleChange}
-                required
+                {...register("name", { required: true })}
               />
             </div>
 
@@ -213,11 +219,18 @@ function BudgetFormPage() {
               <label className="form-label" htmlFor="input-total-budget">
                 Total Budget
               </label>
-              <CurrencyInput
-                id="input-total-budget"
-                value={Number(form.total_budget) || 0}
-                onChange={handleBudgetChange}
-                placeholder="0"
+              <Controller
+                name="total_budget"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <CurrencyInput
+                    id="input-total-budget"
+                    value={Number(value) || 0}
+                    onChange={(numericValue) => onChange(numericValue ? String(numericValue) : "")}
+                    placeholder="0"
+                  />
+                )}
               />
             </div>
 
@@ -230,10 +243,7 @@ function BudgetFormPage() {
                   id="input-start-date"
                   className="form-input"
                   type="date"
-                  name="start_date"
-                  value={form.start_date}
-                  onChange={handleChange}
-                  required
+                  {...register("start_date", { required: true })}
                 />
               </div>
               <div className="form-group">
@@ -244,10 +254,7 @@ function BudgetFormPage() {
                   id="input-end-date"
                   className="form-input"
                   type="date"
-                  name="end_date"
-                  value={form.end_date}
-                  onChange={handleChange}
-                  required
+                  {...register("end_date", { required: true })}
                 />
               </div>
             </div>
@@ -259,9 +266,7 @@ function BudgetFormPage() {
               <select
                 id="input-category"
                 className="form-input form-select"
-                name="category_id"
-                value={form.category_id}
-                onChange={handleChange}
+                {...register("category_id")}
               >
                 <option value="">Global (Semua kategori)</option>
                 {categories.map((cat) => (
@@ -272,14 +277,34 @@ function BudgetFormPage() {
               </select>
             </div>
 
+            <div className="form-group">
+              <label className="form-label">
+                Custom Excluded Days (Hari yang tidak dihitung dalam budget)
+              </label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "8px" }}>
+                {WEEKDAYS.map((day) => (
+                  <label key={day.value} style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", background: "rgba(255,255,255,0.05)", padding: "6px 12px", borderRadius: "16px", fontSize: "0.9rem" }}>
+                    <input
+                      type="checkbox"
+                      value={String(day.value)}
+                      {...register("excluded_weekdays")}
+                      style={{ accentColor: "#4f46e5", cursor: "pointer", width: "16px", height: "16px" }}
+                    />
+                    {day.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <button
               type="submit"
               className="btn btn-primary btn-submit"
-              disabled={submitting}
+              disabled={isSubmitting}
               id="btn-submit"
+              style={{ marginTop: "1rem" }}
             >
-              {submitting && <span className="spinner" />}
-              {submitting
+              {isSubmitting && <span className="spinner" />}
+              {isSubmitting
                 ? "Menyimpan..."
                 : isEdit
                   ? "Simpan Perubahan"
@@ -325,7 +350,7 @@ function BudgetFormPage() {
                   <span className="preview-stat-value">
                     {preview.workingDays}
                   </span>
-                  <span className="preview-stat-label">Hari Kerja</span>
+                  <span className="preview-stat-label">Hari Dihitung</span>
                 </div>
               </div>
 
@@ -337,7 +362,7 @@ function BudgetFormPage() {
                   <span className="preview-stat-value">
                     {preview.weekendDays}
                   </span>
-                  <span className="preview-stat-label">Hari Weekend</span>
+                  <span className="preview-stat-label">Hari Excluded</span>
                 </div>
               </div>
 
@@ -365,7 +390,7 @@ function BudgetFormPage() {
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
-              Budget harian = Total Budget ÷ Hari Kerja. Weekend mendapat budget
+              Budget harian = Total Budget ÷ Hari Dihitung. Hari Excluded mendapat budget
               Rp 0 (carry-over tetap aktif).
             </div>
           </div>
