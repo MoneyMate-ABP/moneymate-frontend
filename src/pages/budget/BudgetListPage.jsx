@@ -21,8 +21,14 @@ const BackIcon = () => (
 
 function BudgetListPage() {
   const navigate = useNavigate();
-  const { periods, loading, error, fetchPeriods, deletePeriod } =
-    useBudgetStore();
+  const {
+    periods,
+    loading,
+    error,
+    fetchPeriods,
+    deletePeriod,
+    setDefaultPeriod,
+  } = useBudgetStore();
 
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -168,7 +174,14 @@ function BudgetListPage() {
                   id={`budget-card-${period.id}`}
                 >
                   <div className="budget-card-header">
-                    <h3 className="budget-card-name">{period.name}</h3>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <h3 className="budget-card-name" style={{ margin: 0 }}>{period.name}</h3>
+                      {period.is_default && (
+                        <span className="badge" style={{ background: "rgba(255, 215, 0, 0.15)", color: "#ffd700", border: "1px solid rgba(255, 215, 0, 0.4)" }}>
+                          ★ Default
+                        </span>
+                      )}
+                    </div>
                     <span className={`badge ${cfg.className}`}>
                       {cfg.label}
                     </span>
@@ -285,6 +298,27 @@ function BudgetListPage() {
                       </svg>
                       Hapus
                     </button>
+
+                    {!period.is_default && (
+                      <button
+                        className="btn-card"
+                        onClick={() => setDefaultPeriod(period.id)}
+                        id={`btn-set-default-${period.id}`}
+                        style={{ color: "#ffd700" }}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          width="15"
+                          height="15"
+                        >
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                        Set Default
+                      </button>
+                    )}
                   </div>
                 </div>
               );
