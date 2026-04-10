@@ -61,6 +61,49 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const extractAuthErrorCode = (err) => {
+    const directCode =
+      typeof err?.code === "string" && err.code.trim().length > 0
+        ? err.code.trim()
+        : "";
+
+    if (directCode) {
+      return directCode;
+    }
+
+    const nestedCode =
+      typeof err?.customData?._tokenResponse?.error?.message === "string"
+        ? err.customData._tokenResponse.error.message
+        : "";
+
+    return nestedCode || "";
+  };
+
+  const setAuthDebugError = (err, fallbackMessage) => {
+    const parsedMessage = parseApiError(err, fallbackMessage);
+    const firebaseCode = extractAuthErrorCode(err);
+    const finalMessage = firebaseCode
+      ? `${parsedMessage} [firebase: ${firebaseCode}]`
+      : parsedMessage;
+
+    setError(finalMessage);
+
+    try {
+      window.localStorage.setItem(
+        "mm_last_auth_error",
+        JSON.stringify({
+          source: "google-login",
+          message: parsedMessage,
+          firebaseCode: firebaseCode || null,
+          at: new Date().toISOString(),
+          userAgent: window.navigator.userAgent,
+        }),
+      );
+    } catch {
+      // Ignore storage errors in restricted browser modes.
+    }
+  };
+
   // Show success message if redirected from register
   useEffect(() => {
     if (location.state?.registered) {
@@ -87,7 +130,7 @@ function LoginPage() {
         navigate("/", { replace: true });
       } catch (err) {
         if (!active) return;
-        setError(parseApiError(err, "Google login gagal. Coba lagi."));
+        setAuthDebugError(err, "Google login gagal. Coba lagi.");
       } finally {
         if (active) setGoogleLoading(false);
       }
@@ -146,7 +189,7 @@ function LoginPage() {
       ) {
         return;
       }
-      setError(parseApiError(err, "Google login gagal. Coba lagi."));
+      setAuthDebugError(err, "Google login gagal. Coba lagi.");
     } finally {
       setGoogleLoading(false);
     }
