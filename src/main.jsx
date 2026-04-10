@@ -7,9 +7,13 @@ import "./index.css";
 
 // Register push notification service worker
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw-push.js").catch(() => {
-    // Silent fail — push notifications just won't work
-  });
+  navigator.serviceWorker
+    .register("/sw-push.js", {
+      updateViaCache: "none",
+    })
+    .catch(() => {
+      // Silent fail — push notifications just won't work
+    });
 }
 
 createRoot(document.getElementById("root")).render(

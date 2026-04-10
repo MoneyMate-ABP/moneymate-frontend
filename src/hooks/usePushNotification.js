@@ -28,7 +28,11 @@ async function getServiceWorkerRegistration() {
     return null;
   }
 
-  const existing = await navigator.serviceWorker.getRegistration();
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  const existing = registrations.find((registration) =>
+    registration.active?.scriptURL?.endsWith("/sw-push.js"),
+  );
+
   if (existing) {
     return existing;
   }
@@ -108,11 +112,17 @@ export default function usePushNotification() {
         return false;
       }
 
-      const { data } = await api.get("/api/notifications/vapid-key");
+      const { data } = await api.get("/api/notifications/vapid-key", {
+        params: { t: Date.now() },
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
       const vapidPublicKey = data?.publicKey;
 
       if (!vapidPublicKey) {
-        return false;
+        throw new Error("VAPID public key response is empty.");
       }
 
       let subscription = await registration.pushManager.getSubscription();
