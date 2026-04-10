@@ -9,6 +9,7 @@ import DailyStatusPage from "./pages/budget/DailyStatusPage.jsx";
 import TransactionList from "./pages/transactions/TransactionList.jsx";
 import TransactionForm from "./pages/transactions/TransactionForm.jsx";
 import TransactionDetail from "./pages/transactions/TransactionDetail.jsx";
+import ProfilePage from "./pages/profile/ProfilePage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AppLayout from "./components/layout/AppLayout.jsx";
 import useAuthStore from "./store/authStore.js";
@@ -63,6 +64,7 @@ function App() {
         <Route path="/transactions/add" element={<TransactionForm />} />
         <Route path="/transactions/:id" element={<TransactionDetail />} />
         <Route path="/transactions/:id/edit" element={<TransactionForm />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
       {/* Catch-all redirect */}

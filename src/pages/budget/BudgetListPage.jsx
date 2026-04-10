@@ -33,6 +33,10 @@ function BudgetListPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Lazy Load
+  const [visibleCount, setVisibleCount] = useState(20);
+  const itemsPerPage = 20;
+
   useEffect(() => {
     fetchPeriods();
   }, [fetchPeriods]);
@@ -64,6 +68,8 @@ function BudgetListPage() {
     finished: { label: "Selesai", className: "badge-finished" },
     upcoming: { label: "Mendatang", className: "badge-upcoming" },
   };
+
+  const paginated = periods.slice(0, visibleCount);
 
   return (
     <div className="page-container">
@@ -163,8 +169,9 @@ function BudgetListPage() {
             </button>
           </div>
         ) : (
-          <div className="budget-grid">
-            {periods.map((period) => {
+          <>
+            <div className="budget-grid">
+              {paginated.map((period) => {
               const status = getStatus(period);
               const cfg = statusConfig[status];
               return (
@@ -324,6 +331,23 @@ function BudgetListPage() {
               );
             })}
           </div>
+
+          {/* Load More */}
+          {visibleCount < periods.length ? (
+            <div className="load-more-container">
+              <button
+                className="btn load-more-btn"
+                onClick={() => setVisibleCount((prev) => prev + itemsPerPage)}
+              >
+                Tampilkan lebih banyak ({periods.length - visibleCount} tersisa)
+              </button>
+            </div>
+          ) : periods.length > itemsPerPage ? (
+            <div className="load-more-end">
+              <span>Semua budget ditampilkan</span>
+            </div>
+          ) : null}
+        </>
         )}
       </main>
 

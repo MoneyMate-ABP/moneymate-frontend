@@ -130,9 +130,9 @@ function TransactionList() {
   const [accordionType, setAccordionType] = useState(true);
   const [accordionCategory, setAccordionCategory] = useState(true);
 
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  // Lazy Load / Load More
+  const [visibleCount, setVisibleCount] = useState(20);
+  const itemsPerPage = 20;
 
   const showToast = useCallback((message, type = "success") => {
     setToast({ message, type });
@@ -225,11 +225,7 @@ function TransactionList() {
   });
 
   // Pagination
-  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
-  const paginated = filtered.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const paginated = filtered.slice(0, visibleCount);
 
   useEffect(() => {
     let active = true;
@@ -259,7 +255,7 @@ function TransactionList() {
     };
   }, [paginated, locationNames]);
 
-  useEffect(() => { setCurrentPage(1); }, [filterType, filterCategory, filterDateFrom, filterDateTo, searchQuery]);
+  useEffect(() => { setVisibleCount(itemsPerPage); }, [filterType, filterCategory, filterDateFrom, filterDateTo, searchQuery]);
 
   // Summary
   const totalIncome = filtered.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
@@ -554,18 +550,21 @@ function TransactionList() {
                   })}
                 </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="tx-pagination" id="tx-pagination">
-                    <button className="tx-pagination__btn" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>‹ Prev</button>
-                    <div className="tx-pagination__pages">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button key={page} className={`tx-pagination__page ${currentPage === page ? "active" : ""}`} onClick={() => setCurrentPage(page)}>{page}</button>
-                      ))}
-                    </div>
-                    <button className="tx-pagination__btn" disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>Next ›</button>
+                {/* Load More */}
+                {visibleCount < filtered.length ? (
+                  <div className="load-more-container">
+                    <button
+                      className="btn load-more-btn"
+                      onClick={() => setVisibleCount((prev) => prev + itemsPerPage)}
+                    >
+                      Tampilkan lebih banyak ({filtered.length - visibleCount} tersisa)
+                    </button>
                   </div>
-                )}
+                ) : filtered.length > itemsPerPage ? (
+                  <div className="load-more-end">
+                    <span>Semua transaksi ditampilkan</span>
+                  </div>
+                ) : null}
               </>
             )}
           </>
