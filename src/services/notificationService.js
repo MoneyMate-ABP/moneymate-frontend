@@ -110,3 +110,12 @@ async function sendSubscriptionToBackend(subscription) {
     console.warn("Could not send subscription to backend:", err.message);
   }
 }
+
+/**
+ * Auto check and subscribe on login/app load if permission is already granted.
+ */
+export async function initPushOnLogin() {
+  if (getPermissionStatus() === "granted") {
+    await subscribePushNotification();
+  }
+}

@@ -3,11 +3,14 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import App from "./App.jsx";
+import { initPushOnLogin } from "./services/notificationService.js";
 import "./index.css";
 
 // Register push notification service worker
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw-push.js").catch(() => {
+  navigator.serviceWorker.register("/sw-push.js").then(() => {
+    initPushOnLogin();
+  }).catch(() => {
     // Silent fail — push notifications just won't work
   });
 }

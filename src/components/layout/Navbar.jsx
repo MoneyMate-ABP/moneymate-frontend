@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { logoutUser } from "../../services/authService";
+import {
+  isPushSupported,
+  getPermissionStatus,
+  requestNotificationPermission,
+  subscribePushNotification,
+} from "../../services/notificationService";
 import ConfirmModal from "../ConfirmModal";
 import toast from "react-hot-toast";
 
@@ -28,12 +34,21 @@ const BellIcon = () => (
   </svg>
 );
 
+const ChevronDownIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
 function Navbar() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notifPermission, setNotifPermission] = useState("default");
+  const dropdownRef = useRef(null);
 
   const today = new Date().toLocaleDateString("id-ID", {
     weekday: "long",
@@ -41,6 +56,37 @@ function Navbar() {
     month: "long",
     year: "numeric",
   });
+
+  // Check notification permission on mount
+  useEffect(() => {
+    if (isPushSupported()) {
+      setNotifPermission(getPermissionStatus());
+    }
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownOpen]);
+
+  // Close dropdown on Escape
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") setDropdownOpen(false);
+    };
+    if (dropdownOpen) {
+      document.addEventListener("keydown", handleEsc);
+    }
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [dropdownOpen]);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -52,6 +98,49 @@ function Navbar() {
     logout();
     toast.success("Berhasil logout!");
     navigate("/login", { replace: true });
+  };
+
+  const handleBellClick = async () => {
+    if (!isPushSupported()) {
+      toast.error("Browser ini tidak mendukung notifikasi push.");
+      return;
+    }
+
+    const currentPerm = getPermissionStatus();
+
+    if (currentPerm === "denied") {
+      toast("Notifikasi diblokir. Aktifkan di pengaturan browser.", {
+        icon: "🔕",
+      });
+      return;
+    }
+
+    if (currentPerm === "default") {
+      const result = await requestNotificationPermission();
+      setNotifPermission(result);
+
+      if (result === "granted") {
+        const sub = await subscribePushNotification();
+        if (sub) {
+          toast.success("Notifikasi push berhasil diaktifkan! 🔔");
+        }
+      } else if (result === "denied") {
+        toast("Notifikasi ditolak. Kamu bisa mengaktifkannya di pengaturan browser.", {
+          icon: "🔕",
+        });
+      }
+      return;
+    }
+
+    // Already granted — ensure subscription is active
+    if (currentPerm === "granted") {
+      const sub = await subscribePushNotification();
+      if (sub) {
+        toast.success("Notifikasi push aktif! 🔔");
+      } else {
+        toast("Gagal berlangganan notifikasi push.", { icon: "⚠️" });
+      }
+    }
   };
 
   return (
@@ -68,31 +157,65 @@ function Navbar() {
         </div>
 
         <div className="app-navbar__right">
-          {/* Notification bell (visual only for now) */}
+          {/* Notification bell */}
           <button
-            className="app-navbar__bell"
+            className={`app-navbar__bell ${notifPermission === "granted" ? "app-navbar__bell--active" : ""}`}
             title="Notifikasi"
             aria-label="Notifikasi"
-            onClick={() => toast("Fitur notifikasi segera hadir!", { icon: "🔔" })}
+            onClick={handleBellClick}
+            id="notification-bell-btn"
           >
             <BellIcon />
+            {notifPermission === "granted" && (
+              <span className="app-navbar__bell-dot" />
+            )}
           </button>
 
-          <div className="app-navbar__user">
-            <div className="app-navbar__avatar">
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
-            <span className="app-navbar__name">{user?.name}</span>
+          {/* Profile Avatar + Dropdown */}
+          <div className="profile-dropdown-wrapper" ref={dropdownRef}>
+            <button
+              className="app-navbar__avatar-btn"
+              onClick={() => setDropdownOpen((prev) => !prev)}
+              aria-label="Menu profil"
+              aria-expanded={dropdownOpen}
+              id="profile-avatar-btn"
+            >
+              <div className="app-navbar__avatar">
+                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              </div>
+              <ChevronDownIcon />
+            </button>
+
+            {dropdownOpen && (
+              <div className="profile-dropdown" id="profile-dropdown">
+                <div className="profile-dropdown__info">
+                  <div className="profile-dropdown__avatar">
+                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </div>
+                  <div className="profile-dropdown__text">
+                    <span className="profile-dropdown__name">
+                      {user?.name || "User"}
+                    </span>
+                    <span className="profile-dropdown__email">
+                      {user?.email || "—"}
+                    </span>
+                  </div>
+                </div>
+                <div className="profile-dropdown__divider" />
+                <button
+                  className="profile-dropdown__logout"
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    setShowLogoutConfirm(true);
+                  }}
+                  id="dropdown-logout-btn"
+                >
+                  <LogoutIcon />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
           </div>
-
-          <button
-            className="btn-logout"
-            onClick={() => setShowLogoutConfirm(true)}
-            id="logout-btn"
-          >
-            <LogoutIcon />
-            <span>Logout</span>
-          </button>
         </div>
       </header>
 

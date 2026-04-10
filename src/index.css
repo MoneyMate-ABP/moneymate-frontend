@@ -553,6 +553,7 @@ a:hover {
 }
 
 .app-navbar__bell {
+  position: relative;
   background: none;
   border: none;
   color: var(--color-text-muted);
@@ -576,10 +577,44 @@ a:hover {
   height: 20px;
 }
 
-.app-navbar__user {
+.app-navbar__bell--active {
+  color: var(--color-accent);
+}
+
+.app-navbar__bell-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(22, 33, 62, 0.85);
+}
+
+.profile-dropdown-wrapper {
+  position: relative;
+}
+
+.app-navbar__avatar-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 4px;
+  border-radius: 20px;
+  transition: background var(--transition-fast);
+}
+
+.app-navbar__avatar-btn:hover,
+.app-navbar__avatar-btn[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.app-navbar__avatar-btn svg {
+  color: var(--color-text-muted);
 }
 
 .app-navbar__avatar {
@@ -595,10 +630,97 @@ a:hover {
   color: #fff;
 }
 
-.app-navbar__name {
-  font-size: 0.8125rem;
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: rgba(22, 33, 62, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 220px;
+  z-index: 100;
+  animation: dropDownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  padding: 8px;
+}
+
+@keyframes dropDownIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-dropdown__info {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-dropdown__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-accent), #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.profile-dropdown__text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.profile-dropdown__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-dropdown__email {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-dropdown__divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 8px 0;
+}
+
+.profile-dropdown__logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #ff6b7a;
+  font-family: var(--font-family);
+  font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.profile-dropdown__logout:hover {
+  background: rgba(255, 71, 87, 0.1);
 }
 
 /* ─── Sidebar (Desktop) ────────────────────────────────── */
@@ -3658,74 +3780,41 @@ a:hover {
   border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* ── Pagination ────────────────────────────────────────── */
-.tx-pagination {
+/* ── Lazy Load / Load More ─────────────────────────────── */
+.load-more-container {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 8px;
   margin-top: 24px;
   animation: cardSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: 250ms;
   opacity: 0;
 }
 
-.tx-pagination__btn {
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-card);
-  color: var(--color-text-secondary);
+.load-more-btn {
+  background: rgba(108, 99, 255, 0.1);
+  color: var(--color-accent);
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
   font-family: var(--font-family);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.tx-pagination__btn:hover:not(:disabled) {
-  background: var(--color-bg-card-hover);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: var(--color-text-primary);
-}
-
-.tx-pagination__btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.tx-pagination__pages {
-  display: flex;
-  gap: 4px;
-}
-
-.tx-pagination__page {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-card);
-  color: var(--color-text-secondary);
-  font-family: var(--font-family);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.tx-pagination__page:hover {
-  background: var(--color-bg-card-hover);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.tx-pagination__page.active {
-  background: rgba(108, 99, 255, 0.15);
+.load-more-btn:hover {
+  background: rgba(108, 99, 255, 0.2);
   border-color: rgba(108, 99, 255, 0.4);
-  color: var(--color-accent);
-  font-weight: 700;
+}
+
+.load-more-end {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  animation: cardSlideUp 0.5s ease forwards;
+  opacity: 0;
 }
 
 /* ── Transaction Detail Modal ──────────────────────────── */
@@ -3940,11 +4029,6 @@ a:hover {
 
   .location-row__fields {
     width: 100%;
-  }
-
-  .tx-pagination__pages {
-    flex-wrap: wrap;
-    justify-content: center;
   }
 }
 

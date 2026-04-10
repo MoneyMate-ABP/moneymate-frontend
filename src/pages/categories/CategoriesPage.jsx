@@ -244,6 +244,12 @@ function CategoriesPage() {
   const [filterType, setFilterType] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Lazy Load
+  const [visibleCount, setVisibleCount] = useState(20);
+  const itemsPerPage = 20;
+
+  useEffect(() => { setVisibleCount(itemsPerPage); }, [filterType, searchQuery]);
+
   const showToast = useCallback((message, type = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
@@ -336,6 +342,8 @@ function CategoriesPage() {
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesType && matchesSearch;
   });
+
+  const paginated = filtered.slice(0, visibleCount);
 
   return (
     <div className="page-container">
@@ -451,8 +459,9 @@ function CategoriesPage() {
                 </span>
               </div>
             ) : (
-              <div className="category-grid" id="category-list">
-                {filtered.map((cat, index) => {
+              <>
+                <div className="category-grid" id="category-list">
+                  {paginated.map((cat, index) => {
                   const cfg = typeConfig[cat.type] || typeConfig.expense;
                   return (
                     <div
@@ -508,7 +517,24 @@ function CategoriesPage() {
                   );
                 })}
               </div>
-            )}
+
+              {/* Load More */}
+              {visibleCount < filtered.length ? (
+                <div className="load-more-container">
+                  <button
+                    className="btn load-more-btn"
+                    onClick={() => setVisibleCount((prev) => prev + itemsPerPage)}
+                  >
+                    Tampilkan lebih banyak ({filtered.length - visibleCount} tersisa)
+                  </button>
+                </div>
+              ) : filtered.length > itemsPerPage ? (
+                <div className="load-more-end">
+                  <span>Semua kategori ditampilkan</span>
+                </div>
+              ) : null}
+            </>
+          )}
           </>
         )}
       </main>
