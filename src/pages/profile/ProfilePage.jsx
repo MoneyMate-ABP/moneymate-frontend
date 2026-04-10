@@ -41,16 +41,22 @@ export default function ProfilePage() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDisableConfirm, setShowDisableConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  
+
   const [pushSupported, setPushSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [toggling, setToggling] = useState(false);
 
   useEffect(() => {
-    // MOCK: "anggap saja sudah berlangganan dulu"
+    // MOCK: Simpan preferensi simulasi ke localStorage agar tidak ter-reset
     setPushSupported(true);
-    setIsSubscribed(true);
-    
+    const savedState = localStorage.getItem("mockPushSub");
+    if (savedState !== null) {
+      setIsSubscribed(savedState === "true");
+    } else {
+      setIsSubscribed(true); // Default anggap sudah langganan
+      localStorage.setItem("mockPushSub", "true");
+    }
+
     /* Original Logic:
     const supported = isPushSupported();
     setPushSupported(supported);
@@ -74,10 +80,11 @@ export default function ProfilePage() {
     }
 
     setToggling(true);
-    
+
     // MOCK: Toggle state directly tanpa panggil backend/service worker sungguhan
     setTimeout(() => {
       setIsSubscribed(true);
+      localStorage.setItem("mockPushSub", "true");
       toast.success("Notifikasi push diaktifkan! 🔔");
       setToggling(false);
     }, 300);
@@ -85,6 +92,7 @@ export default function ProfilePage() {
 
   const confirmDisableNotification = () => {
     setIsSubscribed(false);
+    localStorage.setItem("mockPushSub", "false");
     setShowDisableConfirm(false);
     toast("Notifikasi dimatikan.", { icon: "🔕" });
   };
@@ -116,7 +124,7 @@ export default function ProfilePage() {
         body: `Hai ${user?.name || ''} Jangan lupa Irit ya cur`,
         icon: "/vite.svg"
       });
-      
+
     } catch (err) {
       // Fallback bila service worker terkendala, langsung panggil API Notification biasa
       try {
@@ -139,7 +147,7 @@ export default function ProfilePage() {
       }
 
       // Simulasi Budget, idealnya didapat dari state/store
-      const dummyBudget = "50.000"; 
+      const dummyBudget = "50.000";
 
       const reg = await navigator.serviceWorker.ready;
       await reg.showNotification("Pengingat Pagi ☀️", {
@@ -199,7 +207,7 @@ export default function ProfilePage() {
                 <p>Terima pemberitahuan anggaran harian</p>
               </div>
             </div>
-            
+
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               {isSubscribed && (
                 <div className="btn-appear" style={{ display: "flex", gap: "10px" }}>
@@ -221,8 +229,8 @@ export default function ProfilePage() {
                 </div>
               )}
               <label className="toggle-switch">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={isSubscribed}
                   onChange={handleToggleNotification}
                   disabled={!pushSupported}
@@ -237,7 +245,7 @@ export default function ProfilePage() {
         <h3 className="profile-section-title profile-section-title--danger">Akun</h3>
 
         <div className="profile-actions-container">
-          <button 
+          <button
             className="profile-action-item profile-action-item--clickable"
             onClick={() => setShowLogoutConfirm(true)}
             id="profile-logout-btn"
