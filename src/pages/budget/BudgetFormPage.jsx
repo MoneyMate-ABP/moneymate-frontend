@@ -227,7 +227,9 @@ function BudgetFormPage() {
                   <CurrencyInput
                     id="input-total-budget"
                     value={Number(value) || 0}
-                    onChange={(numericValue) => onChange(numericValue ? String(numericValue) : "")}
+                    onChange={(numericValue) =>
+                      onChange(numericValue ? String(numericValue) : "")
+                    }
                     placeholder="0"
                   />
                 )}
@@ -281,14 +283,14 @@ function BudgetFormPage() {
               <label className="form-label">
                 Custom Excluded Days (Hari yang tidak dihitung dalam budget)
               </label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "8px" }}>
+              <div className="excluded-days-list">
                 {WEEKDAYS.map((day) => (
-                  <label key={day.value} style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", background: "rgba(255,255,255,0.05)", padding: "6px 12px", borderRadius: "16px", fontSize: "0.9rem" }}>
+                  <label key={day.value} className="excluded-day-chip">
                     <input
                       type="checkbox"
                       value={String(day.value)}
                       {...register("excluded_weekdays")}
-                      style={{ accentColor: "#4f46e5", cursor: "pointer", width: "16px", height: "16px" }}
+                      className="excluded-day-chip__checkbox"
                     />
                     {day.label}
                   </label>
@@ -390,8 +392,8 @@ function BudgetFormPage() {
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
-              Budget harian = Total Budget ÷ Hari Dihitung. Hari Excluded mendapat budget
-              Rp 0 (carry-over tetap aktif).
+              Budget harian = Total Budget ÷ Hari Dihitung. Hari Excluded
+              mendapat budget Rp 0 (carry-over tetap aktif).
             </div>
           </div>
         </div>

@@ -29,6 +29,31 @@ export default function useNotificationHistory() {
     refetch();
   }, [refetch]);
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      refetch();
+    }, 30000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refetch();
+      }
+    };
+
+    const handleWindowFocus = () => {
+      refetch();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleWindowFocus);
+    };
+  }, [refetch]);
+
   const markRead = useCallback(
     async (id) => {
       await markReadRequest(id);

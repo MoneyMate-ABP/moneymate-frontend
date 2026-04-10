@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { logoutUser } from "../../services/authService";
 import {
@@ -185,6 +185,7 @@ function findSuggestedCategoryId({
    ══════════════════════════════════════════════════════════ */
 function TransactionList() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const user = useAuthStore((s) => s.user);
 
   const [transactions, setTransactions] = useState([]);
@@ -294,6 +295,19 @@ function TransactionList() {
     setScanFile(null);
     setScanUploadOpen(true);
   };
+
+  useEffect(() => {
+    if (searchParams.get("openScan") !== "1") {
+      return;
+    }
+
+    setScanError("");
+    setScanFile(null);
+    setScanUploadOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("openScan");
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const closeScanUploadModal = () => {
     if (scanLoading) return;

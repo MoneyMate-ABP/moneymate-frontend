@@ -181,12 +181,12 @@ function BudgetListPage() {
                   id={`budget-card-${period.id}`}
                 >
                   <div className="budget-card-header">
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <h3 className="budget-card-name" style={{ margin: 0 }}>{period.name}</h3>
+                    <div className="budget-card-title-row">
+                      <h3 className="budget-card-name" style={{ margin: 0 }}>
+                        {period.name}
+                      </h3>
                       {period.is_default && (
-                        <span className="badge" style={{ background: "rgba(255, 215, 0, 0.15)", color: "#ffd700", border: "1px solid rgba(255, 215, 0, 0.4)" }}>
-                          ★ Default
-                        </span>
+                        <span className="badge badge-default">★ Default</span>
                       )}
                     </div>
                     <span className={`badge ${cfg.className}`}>

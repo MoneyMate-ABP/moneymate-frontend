@@ -630,6 +630,23 @@ a:hover {
   animation: dropDownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@media (max-width: 640px) {
+  .notification-dropdown {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    width: auto;
+    max-width: none;
+    max-height: min(70vh, 520px);
+    z-index: 1300;
+  }
+
+  .notification-dropdown__content {
+    max-height: min(52vh, 420px);
+  }
+}
+
 .notification-dropdown__header {
   display: flex;
   align-items: center;
@@ -1736,6 +1753,22 @@ a:hover {
   margin-bottom: 12px;
 }
 
+.budget-card-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.badge-default {
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.6875rem;
+}
+
 .budget-card-name {
   font-size: 1.0625rem;
   font-weight: 600;
@@ -1881,6 +1914,7 @@ a:hover {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .category-filter-chip {
@@ -1895,6 +1929,7 @@ a:hover {
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .category-filter-chip:hover {
@@ -2282,6 +2317,7 @@ a:hover {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 32px;
+  min-width: 0;
 }
 
 .form-row {
@@ -2305,6 +2341,34 @@ a:hover {
 
 .btn-submit {
   margin-top: 8px;
+}
+
+.excluded-days-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.excluded-day-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+.excluded-day-chip__checkbox {
+  accent-color: #4f46e5;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 /* ─── Budget Preview Panel ─────────────────────────────── */
@@ -3043,6 +3107,9 @@ a:hover {
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 2px;
   }
 
   .category-toolbar__filters::-webkit-scrollbar {
@@ -3051,6 +3118,16 @@ a:hover {
 
   .category-toolbar__add {
     width: 100% !important;
+  }
+
+  .dashboard-quick-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .dashboard-quick-actions .btn {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 140px;
   }
 
   .type-selector {
@@ -3078,6 +3155,24 @@ a:hover {
   .budget-card-stats {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .budget-form {
+    padding: 20px 16px;
+  }
+
+  .excluded-days-list {
+    gap: 8px;
+  }
+
+  .excluded-day-chip {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .budget-card-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .budget-stat {

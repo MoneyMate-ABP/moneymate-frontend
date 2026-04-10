@@ -1,8 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
-import { getCategories } from "../../services/categoryService";
-import { createTransaction } from "../../services/transactionService";
 import {
   getDashboard,
   getRecentTransactions,
@@ -10,8 +8,6 @@ import {
 import SummaryCard from "../../components/SummaryCard";
 import TransactionCard from "../../components/TransactionCard";
 import BudgetStatusBar from "../../components/BudgetStatusBar";
-import CurrencyInput from "../../components/CurrencyInput";
-import { parseApiError } from "../../utils/validation";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const IncomeIcon = () => (
@@ -64,16 +60,6 @@ function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [quickCategories, setQuickCategories] = useState([]);
-  const [quickCategoryLoading, setQuickCategoryLoading] = useState(false);
-  const [quickCategoryError, setQuickCategoryError] = useState("");
-  const [quickType, setQuickType] = useState("expense");
-  const [quickCategoryId, setQuickCategoryId] = useState("");
-  const [quickAmount, setQuickAmount] = useState(0);
-  const [quickNote, setQuickNote] = useState("");
-  const [quickSubmitting, setQuickSubmitting] = useState(false);
-  const [quickSubmitError, setQuickSubmitError] = useState("");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -101,103 +87,6 @@ function DashboardPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  useEffect(() => {
-    if (!isModalOpen) return;
-
-    let mounted = true;
-
-    async function fetchQuickCategories() {
-      setQuickCategoryLoading(true);
-      setQuickCategoryError("");
-      try {
-        const res = await getCategories(user?.id);
-        if (mounted) {
-          setQuickCategories(res.data || []);
-        }
-      } catch {
-        if (mounted) {
-          setQuickCategories([]);
-          setQuickCategoryError("Gagal memuat kategori.");
-        }
-      } finally {
-        if (mounted) {
-          setQuickCategoryLoading(false);
-        }
-      }
-    }
-
-    fetchQuickCategories();
-
-    return () => {
-      mounted = false;
-    };
-  }, [isModalOpen, user?.id]);
-
-  useEffect(() => {
-    if (!isModalOpen) return;
-
-    setQuickAmount(0);
-    setQuickType("expense");
-    setQuickCategoryId("");
-    setQuickNote("");
-    setQuickSubmitError("");
-  }, [isModalOpen]);
-
-  const quickFilteredCategories = useMemo(
-    () =>
-      quickCategories.filter(
-        (cat) => cat.type === quickType || cat.type === "both",
-      ),
-    [quickCategories, quickType],
-  );
-
-  useEffect(() => {
-    if (!quickCategoryId) return;
-
-    const isCategoryValid = quickFilteredCategories.some(
-      (cat) => String(cat.id) === String(quickCategoryId),
-    );
-
-    if (!isCategoryValid) {
-      setQuickCategoryId("");
-    }
-  }, [quickFilteredCategories, quickCategoryId]);
-
-  const handleQuickSubmit = async () => {
-    if (quickAmount <= 0) {
-      setQuickSubmitError("Nominal harus lebih dari 0.");
-      return;
-    }
-
-    if (!quickCategoryId) {
-      setQuickSubmitError("Pilih kategori terlebih dahulu.");
-      return;
-    }
-
-    setQuickSubmitError("");
-    setQuickSubmitting(true);
-
-    try {
-      await createTransaction({
-        amount: Number(quickAmount),
-        type: quickType,
-        category_id: Number(quickCategoryId),
-        date: new Date().toISOString().split("T")[0],
-        note: quickNote.trim() || null,
-        latitude: null,
-        longitude: null,
-      });
-
-      setIsModalOpen(false);
-      await fetchData();
-    } catch (err) {
-      const msg = parseApiError(err, "Gagal menambahkan transaksi.");
-      setQuickSubmitError(msg);
-    } finally {
-      setQuickSubmitting(false);
-    }
-  };
 
   const totals = dashboard?.totals || {};
   const budgets = dashboard?.budgets || {};
@@ -352,8 +241,14 @@ function DashboardPage() {
                     List Transaksi
                   </button>
                   <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => navigate("/transactions?openScan=1")}
+                  >
+                    Scan Struk
+                  </button>
+                  <button
                     className="btn btn-primary btn-sm"
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => navigate("/transactions/add")}
                   >
                     + Tambah Transaksi
                   </button>
@@ -376,103 +271,6 @@ function DashboardPage() {
               )}
             </section>
           </>
-        )}
-
-        {/* ── Tambah Transaksi Modal ─────────────────── */}
-        {isModalOpen && (
-          <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>Tambah Transaksi</h3>
-                <button
-                  className="btn-close"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">Nominal</label>
-                  <CurrencyInput
-                    id="quick-amount"
-                    value={quickAmount}
-                    onChange={setQuickAmount}
-                    placeholder="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Tipe</label>
-                  <select
-                    className="form-input"
-                    value={quickType}
-                    onChange={(e) => setQuickType(e.target.value)}
-                  >
-                    <option value="expense">Pengeluaran</option>
-                    <option value="income">Pemasukan</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Kategori</label>
-                  <select
-                    className="form-input"
-                    value={quickCategoryId}
-                    onChange={(e) => setQuickCategoryId(e.target.value)}
-                    disabled={quickCategoryLoading || !!quickCategoryError}
-                  >
-                    <option value="" disabled>
-                      {quickCategoryLoading
-                        ? "Memuat kategori..."
-                        : quickCategoryError
-                          ? "Kategori gagal dimuat"
-                          : quickFilteredCategories.length === 0
-                            ? "Belum ada kategori untuk tipe ini"
-                            : "Pilih kategori"}
-                    </option>
-                    {quickFilteredCategories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                  {quickCategoryError && (
-                    <span className="form-error">{quickCategoryError}</span>
-                  )}
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Keterangan</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Makan siang, belanja..."
-                    value={quickNote}
-                    onChange={(e) => setQuickNote(e.target.value)}
-                  />
-                </div>
-                {quickSubmitError && (
-                  <span className="form-error">{quickSubmitError}</span>
-                )}
-              </div>
-              <div className="modal-footer">
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  disabled={quickSubmitting}
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Batal
-                </button>
-                <button
-                  className="btn btn-primary"
-                  type="button"
-                  disabled={quickSubmitting || quickCategoryLoading}
-                  onClick={handleQuickSubmit}
-                >
-                  {quickSubmitting ? "Menyimpan..." : "Simpan"}
-                </button>
-              </div>
-            </div>
-          </div>
         )}
       </main>
     </div>
