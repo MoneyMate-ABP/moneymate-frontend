@@ -2923,6 +2923,14 @@ a:hover {
   animation: alertSlideIn 0.2s ease-out;
 }
 
+.form-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
 .form-select {
   appearance: none;
   -webkit-appearance: none;
