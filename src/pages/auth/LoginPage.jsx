@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import {
+  hasPendingGoogleRedirect,
   completeGoogleRedirectLogin,
   loginUser,
   loginWithGoogle,
@@ -70,6 +71,10 @@ function LoginPage() {
   }, [location.state]);
 
   useEffect(() => {
+    if (!hasPendingGoogleRedirect()) {
+      return undefined;
+    }
+
     let active = true;
 
     const completeRedirect = async () => {

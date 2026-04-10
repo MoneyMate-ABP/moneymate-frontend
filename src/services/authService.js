@@ -76,22 +76,33 @@ function setRedirectPending(value) {
   if (typeof window === "undefined") return;
   try {
     if (value) {
-      window.sessionStorage.setItem(REDIRECT_PENDING_KEY, "1");
+      window.localStorage.setItem(REDIRECT_PENDING_KEY, "1");
     } else {
-      window.sessionStorage.removeItem(REDIRECT_PENDING_KEY);
+      window.localStorage.removeItem(REDIRECT_PENDING_KEY);
     }
   } catch {
     // Ignore storage access issues (private mode restrictions, etc.)
   }
 }
 
-function isRedirectPending() {
+export function hasPendingGoogleRedirect() {
   if (typeof window === "undefined") return false;
   try {
-    return window.sessionStorage.getItem(REDIRECT_PENDING_KEY) === "1";
+    return window.localStorage.getItem(REDIRECT_PENDING_KEY) === "1";
   } catch {
     return false;
   }
+}
+
+async function getRedirectResultWithTimeout(timeoutMs = 8000) {
+  return Promise.race([
+    getRedirectResult(auth),
+    new Promise((_, reject) => {
+      window.setTimeout(() => {
+        reject(new Error("Google redirect timed out. Please try again."));
+      }, timeoutMs);
+    }),
+  ]);
 }
 
 function waitForAuthUser(timeoutMs = 4500) {
@@ -197,7 +208,7 @@ export async function loginWithGoogle() {
  * Complete redirect-based Google Sign-In after returning from provider page.
  */
 export async function completeGoogleRedirectLogin() {
-  const result = await getRedirectResult(auth);
+  const result = await getRedirectResultWithTimeout();
   const redirectUser = result?.user || null;
 
   if (redirectUser) {
@@ -205,10 +216,13 @@ export async function completeGoogleRedirectLogin() {
     return exchangeGoogleTokenToBackend(redirectUser);
   }
 
-  if (!isRedirectPending()) return null;
+  if (!hasPendingGoogleRedirect()) return null;
 
   const fallbackUser = auth.currentUser || (await waitForAuthUser());
-  if (!fallbackUser) return null;
+  if (!fallbackUser) {
+    setRedirectPending(false);
+    return null;
+  }
 
   setRedirectPending(false);
   return exchangeGoogleTokenToBackend(fallbackUser);
