@@ -4,12 +4,7 @@ import useAuthStore from "../../store/authStore";
 import { logoutUser } from "../../services/authService";
 import ConfirmModal from "../../components/ConfirmModal";
 import toast from "react-hot-toast";
-import {
-  isPushSupported,
-  requestNotificationPermission,
-  subscribePushNotification,
-  unsubscribePushNotification,
-} from "../../services/notificationService";
+import usePushNotification from "../../hooks/usePushNotification";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const BackIcon = () => (
@@ -41,36 +36,27 @@ export default function ProfilePage() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDisableConfirm, setShowDisableConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-
-  const [pushSupported, setPushSupported] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [iosRequiresInstall, setIosRequiresInstall] = useState(false);
+
+  const { isSupported, permission, isSubscribed, subscribe, unsubscribe } =
+    usePushNotification();
 
   useEffect(() => {
-    // MOCK: Simpan preferensi simulasi ke localStorage agar tidak ter-reset
-    setPushSupported(true);
-    const savedState = localStorage.getItem("mockPushSub");
-    if (savedState !== null) {
-      setIsSubscribed(savedState === "true");
-    } else {
-      setIsSubscribed(true); // Default anggap sudah langganan
-      localStorage.setItem("mockPushSub", "true");
+    if (typeof window === "undefined") {
+      return;
     }
 
-    /* Original Logic:
-    const supported = isPushSupported();
-    setPushSupported(supported);
-    
-    if (supported) {
-      navigator.serviceWorker.ready.then(async (reg) => {
-        const sub = await reg.pushManager.getSubscription();
-        setIsSubscribed(Boolean(sub));
-      }).catch(() => {
-        // service worker not available or failed
-      });
-    }
-    */
+    const isIos = /iPad|iPhone|iPod/i.test(window.navigator.userAgent);
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+
+    setIosRequiresInstall(isIos && !isStandalone);
   }, []);
+
+  const notificationToggleDisabled =
+    toggling || !isSupported || permission === "denied" || iosRequiresInstall;
 
   const handleToggleNotification = async (e) => {
     if (isSubscribed) {
@@ -79,22 +65,48 @@ export default function ProfilePage() {
       return;
     }
 
+    if (notificationToggleDisabled) {
+      return;
+    }
+
     setToggling(true);
 
-    // MOCK: Toggle state directly tanpa panggil backend/service worker sungguhan
-    setTimeout(() => {
-      setIsSubscribed(true);
-      localStorage.setItem("mockPushSub", "true");
-      toast.success("Notifikasi push diaktifkan! 🔔");
+    try {
+      const subscribed = await subscribe();
+      if (!subscribed) {
+        if (permission === "denied") {
+          toast.error("Izin notifikasi diblokir di browser.");
+          return;
+        }
+
+        toast.error("Gagal mengaktifkan notifikasi push.");
+        return;
+      }
+
+      if (!import.meta.env.DEV) {
+        toast.success("Notifikasi harian jam 08:00 berhasil diaktifkan.");
+      }
+    } finally {
       setToggling(false);
-    }, 300);
+    }
   };
 
-  const confirmDisableNotification = () => {
-    setIsSubscribed(false);
-    localStorage.setItem("mockPushSub", "false");
+  const confirmDisableNotification = async () => {
+    setToggling(true);
+
+    const success = await unsubscribe();
+    if (!success) {
+      toast.error("Gagal mematikan notifikasi push.");
+      setToggling(false);
+      return;
+    }
+
+    if (!import.meta.env.DEV) {
+      toast("Notifikasi dimatikan.", { icon: "🔕" });
+    }
+
     setShowDisableConfirm(false);
-    toast("Notifikasi dimatikan.", { icon: "🔕" });
+    setToggling(false);
   };
 
   const handleLogout = async () => {
@@ -107,63 +119,6 @@ export default function ProfilePage() {
     logout();
     toast.success("Berhasil logout!");
     navigate("/login", { replace: true });
-  };
-
-  const handleTestNotification = async () => {
-    try {
-      // Paksa minta izin asli browser terlebih dahulu bila belum
-      const perm = await Notification.requestPermission();
-      if (perm !== "granted") {
-        toast.error("Browser tidak memberi izin notifikasi OS.");
-        return;
-      }
-
-      // Memunculkan native OS Notification melalui Service Worker
-      const reg = await navigator.serviceWorker.ready;
-      await reg.showNotification("MoneyMate", {
-        body: `Hai ${user?.name || ''} Jangan lupa Irit ya cur`,
-        icon: "/vite.svg"
-      });
-
-    } catch (err) {
-      // Fallback bila service worker terkendala, langsung panggil API Notification biasa
-      try {
-        new Notification("MoneyMate", {
-          body: `Hai ${user?.name || ''} Jangan lupa Irit ya cur`,
-          icon: "/vite.svg"
-        });
-      } catch (e) {
-        toast.error("Gagal memunculkan notifikasi OS native.");
-      }
-    }
-  };
-
-  const handleMorningNotification = async () => {
-    try {
-      const perm = await Notification.requestPermission();
-      if (perm !== "granted") {
-        toast.error("Izin notifikasi belum diberikan.");
-        return;
-      }
-
-      // Simulasi Budget, idealnya didapat dari state/store
-      const dummyBudget = "50.000";
-
-      const reg = await navigator.serviceWorker.ready;
-      await reg.showNotification("Pengingat Pagi ☀️", {
-        body: `Hai ${user?.name || "User"}! Budget anda hari ini Rp. ${dummyBudget}. Jangan boros-boros yaa!`,
-        icon: "/vite.svg"
-      });
-    } catch (err) {
-      try {
-        new Notification("Pengingat Pagi ☀️", {
-          body: `Hai ${user?.name || "User"}! Budget anda hari ini Rp. 50.000. Jangan boros-boros yaa!`,
-          icon: "/vite.svg"
-        });
-      } catch (e) {
-        // Abaikan
-      }
-    }
   };
 
   return (
@@ -203,37 +158,41 @@ export default function ProfilePage() {
                 <BellIcon />
               </div>
               <div className="profile-action-item__text">
-                <h3>Notifikasi Web Push</h3>
-                <p>Terima pemberitahuan anggaran harian</p>
+                <h3>Notifikasi harian jam 08:00</h3>
+                {iosRequiresInstall && (
+                  <p>
+                    Install app ke homescreen dulu untuk aktifkan notifikasi
+                  </p>
+                )}
+                {!iosRequiresInstall && !isSupported && (
+                  <p>Browser kamu belum mendukung Web Push Notification.</p>
+                )}
+                {!iosRequiresInstall &&
+                  isSupported &&
+                  permission === "denied" && (
+                    <p>
+                      Izin notifikasi diblokir. Aktifkan lagi dari pengaturan
+                      browser.
+                    </p>
+                  )}
+                {!iosRequiresInstall &&
+                  isSupported &&
+                  permission !== "denied" && (
+                    <p>
+                      Terima ringkasan budget efektif harian langsung dari
+                      sistem.
+                    </p>
+                  )}
               </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              {isSubscribed && (
-                <div className="btn-appear" style={{ display: "flex", gap: "10px" }}>
-                  <button
-                    className="btn btn-primary"
-                    style={{ padding: "4px 12px", fontSize: "0.75rem", borderRadius: "100px", background: "#f39c12", borderColor: "#f39c12" }}
-                    onClick={handleMorningNotification}
-                    title="Simulasi Notifikasi Jam 8 Pagi"
-                  >
-                    Set 8 Pagi
-                  </button>
-                  <button
-                    className="btn btn-primary"
-                    style={{ padding: "4px 12px", fontSize: "0.75rem", borderRadius: "100px" }}
-                    onClick={handleTestNotification}
-                  >
-                    Test
-                  </button>
-                </div>
-              )}
               <label className="toggle-switch">
                 <input
                   type="checkbox"
                   checked={isSubscribed}
                   onChange={handleToggleNotification}
-                  disabled={!pushSupported}
+                  disabled={notificationToggleDisabled}
                   id="notification-toggle"
                 />
                 <span className="toggle-switch__slider"></span>
@@ -242,7 +201,9 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <h3 className="profile-section-title profile-section-title--danger">Akun</h3>
+        <h3 className="profile-section-title profile-section-title--danger">
+          Akun
+        </h3>
 
         <div className="profile-actions-container">
           <button
