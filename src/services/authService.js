@@ -134,6 +134,15 @@ function shouldUseRedirectFlow() {
     /iPad|iPhone|iPod/.test(ua) ||
     (ua.includes("Macintosh") && "ontouchend" in document);
   const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+  const isStandalone =
+    window.navigator.standalone === true ||
+    window.matchMedia?.("(display-mode: standalone)")?.matches === true;
+
+  // iOS PWA standalone often fails to restore redirect auth state reliably.
+  // Prefer popup flow there and reserve redirect for Safari browser tabs.
+  if (isStandalone) {
+    return false;
+  }
 
   return isIOS && isSafari;
 }
