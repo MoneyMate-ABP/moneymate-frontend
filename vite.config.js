@@ -11,7 +11,8 @@ export default defineConfig({
       manifest: {
         name: "MoneyMate — Expense Tracker",
         short_name: "MoneyMate",
-        description: "Kelola keuangan harianmu dengan mudah. Catat pemasukan, pengeluaran, dan atur budget harian.",
+        description:
+          "Kelola keuangan harianmu dengan mudah. Catat pemasukan, pengeluaran, dan atur budget harian.",
         theme_color: "#1a1a2e",
         background_color: "#1a1a2e",
         display: "standalone",
@@ -29,7 +30,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        // Don't precache the push SW — it's registered separately
+        // Load push event handlers into the generated sw.js
+        importScripts: ["/sw-push.js"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/],
       },

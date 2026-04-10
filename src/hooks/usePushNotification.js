@@ -28,16 +28,15 @@ async function getServiceWorkerRegistration() {
     return null;
   }
 
-  const registrations = await navigator.serviceWorker.getRegistrations();
-  const existing = registrations.find((registration) =>
-    registration.active?.scriptURL?.endsWith("/sw-push.js"),
-  );
+  const existing = await navigator.serviceWorker.getRegistration();
 
   if (existing) {
     return existing;
   }
 
-  return navigator.serviceWorker.register("/sw-push.js");
+  return navigator.serviceWorker.register("/sw.js", {
+    updateViaCache: "none",
+  });
 }
 
 function isPushSupportedInBrowser() {
