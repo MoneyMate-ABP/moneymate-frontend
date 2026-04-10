@@ -8,6 +8,7 @@ import {
   updateTransaction,
 } from "../../services/transactionService";
 import { getCategories } from "../../services/categoryService";
+import { getBudgetPeriods } from "../../services/budgetService";
 import CurrencyInput from "../../components/CurrencyInput";
 import LocationPicker from "../../components/LocationPicker";
 import { parseApiError } from "../../utils/validation";
@@ -50,6 +51,7 @@ function TransactionForm() {
   const user = useAuthStore((s) => s.user);
 
   const [categories, setCategories] = useState([]);
+  const [budgetPeriods, setBudgetPeriods] = useState([]);
   const [pageLoading, setPageLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
@@ -68,6 +70,7 @@ function TransactionForm() {
       amount: 0,
       type: "expense",
       category_id: "",
+      budget_period_id: "",
       date: new Date().toISOString().split("T")[0],
       note: "",
       latitude: "",
@@ -84,14 +87,20 @@ function TransactionForm() {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // Load categories + existing transaction (edit)
+  // Load categories + budget periods + existing transaction (edit)
   useEffect(() => {
     async function loadData() {
       setPageLoading(true);
       setFetchError("");
       try {
-        const catRes = await getCategories(user?.id);
-        setCategories(catRes.data || []);
+        const [catRes, bpRes] = await Promise.all([
+          getCategories(user?.id),
+          getBudgetPeriods(),
+        ]);
+        const cats = catRes.data || [];
+        const bps = bpRes.data || [];
+        setCategories(cats);
+        setBudgetPeriods(bps);
 
         if (isEdit) {
           const tx = await getTransaction(id);
@@ -100,6 +109,9 @@ function TransactionForm() {
             amount: tx.amount || 0,
             type: tx.type || "expense",
             category_id: tx.category_id ? String(tx.category_id) : "",
+            budget_period_id: tx.budget_period_id
+              ? String(tx.budget_period_id)
+              : "",
             date: tx.date
               ? new Date(tx.date).toISOString().split("T")[0]
               : new Date().toISOString().split("T")[0],
@@ -107,6 +119,12 @@ function TransactionForm() {
             latitude: tx.latitude ? String(tx.latitude) : "",
             longitude: tx.longitude ? String(tx.longitude) : "",
           });
+        } else {
+          // Auto-select default budget period on create
+          const defaultBp = bps.find((bp) => bp.is_default);
+          if (defaultBp) {
+            setValue("budget_period_id", String(defaultBp.id));
+          }
         }
       } catch {
         setFetchError(
@@ -119,7 +137,7 @@ function TransactionForm() {
       }
     }
     loadData();
-  }, [id, isEdit, reset, user?.id]);
+  }, [id, isEdit, reset, setValue, user?.id]);
 
   // Filter categories by type
   const filteredCategories = categories.filter(
@@ -137,6 +155,11 @@ function TransactionForm() {
       latitude: data.latitude ? parseFloat(data.latitude) : null,
       longitude: data.longitude ? parseFloat(data.longitude) : null,
     };
+
+    // Include budget_period_id only if explicitly selected
+    if (data.budget_period_id) {
+      payload.budget_period_id = Number(data.budget_period_id);
+    }
 
     setSubmitting(true);
     try {
@@ -277,6 +300,30 @@ function TransactionForm() {
                     {errors.category_id.message}
                   </span>
                 )}
+              </div>
+
+              {/* Budget Period */}
+              <div className="form-group">
+                <label className="form-label" htmlFor="tx-budget-period">
+                  Periode Anggaran
+                  <span className="form-optional"> (opsional)</span>
+                </label>
+                <select
+                  id="tx-budget-period"
+                  className="form-input form-select"
+                  {...register("budget_period_id")}
+                >
+                  <option value="">-- Tanpa Periode Anggaran --</option>
+                  {budgetPeriods.map((bp) => (
+                    <option key={bp.id} value={bp.id}>
+                      {bp.name}
+                      {bp.is_default ? " ⭐ (Default)" : ""}
+                    </option>
+                  ))}
+                </select>
+                <p className="form-hint">
+                  Periode default dipilih otomatis, kosongkan jika tidak perlu.
+                </p>
               </div>
 
               {/* Date */}
