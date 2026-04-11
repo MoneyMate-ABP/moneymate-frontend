@@ -1760,10 +1760,27 @@ a:hover {
   min-width: 0;
 }
 
+.budget-card-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
 .badge-default {
   background: rgba(255, 215, 0, 0.15);
   color: #ffd700;
   border: 1px solid rgba(255, 215, 0, 0.4);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.6875rem;
+}
+
+.badge-system {
+  width: fit-content;
+  background: rgba(108, 99, 255, 0.1);
+  color: #b9b3ff;
+  border: 1px solid rgba(108, 99, 255, 0.25);
   text-transform: none;
   letter-spacing: 0;
   font-size: 0.6875rem;
@@ -2341,6 +2358,61 @@ a:hover {
 
 .btn-submit {
   margin-top: 8px;
+}
+
+.budget-system-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.budget-system-info-btn {
+  border: 1px solid rgba(108, 99, 255, 0.28);
+  background: rgba(108, 99, 255, 0.08);
+  color: #c5c0ff;
+  border-radius: var(--radius-full);
+  padding: 5px 12px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.budget-system-info-btn:hover {
+  background: rgba(108, 99, 255, 0.16);
+  border-color: rgba(108, 99, 255, 0.45);
+}
+
+.budget-system-modal {
+  max-width: 520px;
+}
+
+.budget-system-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.budget-system-card {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.budget-system-card strong {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.budget-system-card p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
 }
 
 .excluded-days-list {
@@ -3171,6 +3243,11 @@ a:hover {
   }
 
   .budget-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .budget-system-head {
     flex-direction: column;
     align-items: flex-start;
   }

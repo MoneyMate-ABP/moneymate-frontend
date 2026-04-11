@@ -69,6 +69,12 @@ function BudgetListPage() {
     upcoming: { label: "Mendatang", className: "badge-upcoming" },
   };
 
+  const budgetSystemLabel = {
+    carry_over: "Carry Over",
+    invest: "Invest",
+    nothing: "Nothing",
+  };
+
   const paginated = periods.slice(0, visibleCount);
 
   return (
@@ -181,13 +187,18 @@ function BudgetListPage() {
                   id={`budget-card-${period.id}`}
                 >
                   <div className="budget-card-header">
-                    <div className="budget-card-title-row">
-                      <h3 className="budget-card-name" style={{ margin: 0 }}>
-                        {period.name}
-                      </h3>
-                      {period.is_default && (
-                        <span className="badge badge-default">★ Default</span>
-                      )}
+                    <div className="budget-card-title-wrap">
+                      <div className="budget-card-title-row">
+                        <h3 className="budget-card-name" style={{ margin: 0 }}>
+                          {period.name}
+                        </h3>
+                        {period.is_default && (
+                          <span className="badge badge-default">★ Default</span>
+                        )}
+                      </div>
+                      <span className="badge badge-system">
+                        {budgetSystemLabel[period.budget_system] || "Nothing"}
+                      </span>
                     </div>
                     <span className={`badge ${cfg.className}`}>
                       {cfg.label}

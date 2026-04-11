@@ -33,6 +33,25 @@ const WEEKDAYS = [
   { value: 6, label: "Sabtu" }
 ];
 
+const BUDGET_SYSTEM_OPTIONS = [
+  {
+    value: "nothing",
+    label: "Nothing System",
+    description: "Sisa atau minus hari ini tidak dibawa ke hari berikutnya.",
+  },
+  {
+    value: "carry_over",
+    label: "Carry Over System",
+    description: "Sisa atau minus hari ini dibawa ke budget efektif besok.",
+  },
+  {
+    value: "invest",
+    label: "Invest System",
+    description:
+      "Sisa positif hari ini masuk ke tabungan, tidak dibawa ke besok.",
+  },
+];
+
 function BudgetFormPage() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -43,6 +62,7 @@ function BudgetFormPage() {
 
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
+  const [systemInfoOpen, setSystemInfoOpen] = useState(false);
 
   const {
     register,
@@ -59,6 +79,7 @@ function BudgetFormPage() {
       end_date: dayjs().endOf("month").format("YYYY-MM-DD"),
       category_id: "",
       excluded_weekdays: ["0", "6"], // default excluded: Sunday and Saturday
+      budget_system: "nothing",
     },
   });
 
@@ -87,9 +108,10 @@ function BudgetFormPage() {
           start_date: p.start_date,
           end_date: p.end_date,
           category_id: p.category_id ?? "",
-          excluded_weekdays: Array.isArray(p.excluded_weekdays) 
-            ? p.excluded_weekdays.map(String) 
+          excluded_weekdays: Array.isArray(p.excluded_weekdays)
+            ? p.excluded_weekdays.map(String)
             : ["0", "6"],
+          budget_system: p.budget_system || "nothing",
         });
       };
 
@@ -140,7 +162,10 @@ function BudgetFormPage() {
       start_date: data.start_date,
       end_date: data.end_date,
       category_id: data.category_id ? Number(data.category_id) : null,
-      excluded_weekdays: data.excluded_weekdays ? data.excluded_weekdays.map(Number) : [],
+      excluded_weekdays: data.excluded_weekdays
+        ? data.excluded_weekdays.map(Number)
+        : [],
+      budget_system: data.budget_system || "nothing",
     };
 
     try {
@@ -280,6 +305,35 @@ function BudgetFormPage() {
             </div>
 
             <div className="form-group">
+              <div className="budget-system-head">
+                <label className="form-label" htmlFor="input-budget-system">
+                  Budget System
+                </label>
+                <button
+                  type="button"
+                  className="budget-system-info-btn"
+                  onClick={() => setSystemInfoOpen(true)}
+                >
+                  Pelajari Sistem
+                </button>
+              </div>
+              <select
+                id="input-budget-system"
+                className="form-input form-select"
+                {...register("budget_system")}
+              >
+                {BUDGET_SYSTEM_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <p className="form-hint">
+                Default: <strong>Nothing System</strong>.
+              </p>
+            </div>
+
+            <div className="form-group">
               <label className="form-label">
                 Custom Excluded Days (Hari yang tidak dihitung dalam budget)
               </label>
@@ -397,6 +451,46 @@ function BudgetFormPage() {
             </div>
           </div>
         </div>
+
+        {systemInfoOpen && (
+          <div
+            className="modal-overlay"
+            onClick={() => setSystemInfoOpen(false)}
+          >
+            <div
+              className="modal-content budget-system-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h3>Informasi Budget System</h3>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setSystemInfoOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="modal-body budget-system-modal__body">
+                {BUDGET_SYSTEM_OPTIONS.map((option) => (
+                  <div key={option.value} className="budget-system-card">
+                    <strong>{option.label}</strong>
+                    <p>{option.description}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => setSystemInfoOpen(false)}
+                >
+                  Mengerti
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

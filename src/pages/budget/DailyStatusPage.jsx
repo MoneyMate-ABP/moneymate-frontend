@@ -59,6 +59,19 @@ function DailyStatusPage() {
     return "row-surplus";
   };
 
+  const investSummary = useMemo(() => {
+    if (
+      !period ||
+      period.budget_system !== "invest" ||
+      dailyStatuses.length === 0
+    ) {
+      return 0;
+    }
+
+    const lastDay = dailyStatuses[dailyStatuses.length - 1];
+    return Number(lastDay?.invested_total || 0);
+  }, [period, dailyStatuses]);
+
   if (!period && !dailyLoading) {
     return (
       <div className="page-container">
@@ -138,6 +151,18 @@ function DailyStatusPage() {
                   <span className="summary-card-label">Kategori</span>
                   <span className="summary-card-value">
                     {period.category_name}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {period.budget_system === "invest" && (
+              <div className="summary-card">
+                <span className="summary-card-icon">🏦</span>
+                <div>
+                  <span className="summary-card-label">Tabungan Terkumpul</span>
+                  <span className="summary-card-value">
+                    {formatCurrency(investSummary)}
                   </span>
                 </div>
               </div>
