@@ -340,10 +340,9 @@ function BudgetListPage() {
 
                       {!period.is_default && (
                         <button
-                          className="btn-card"
+                          className="btn-card btn-card-default"
                           onClick={() => setDefaultPeriod(period.id)}
                           id={`btn-set-default-${period.id}`}
-                          style={{ color: "#ffd700" }}
                         >
                           <svg
                             viewBox="0 0 24 24"

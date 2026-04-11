@@ -2318,6 +2318,18 @@ a:hover {
   border-color: rgba(255, 71, 87, 0.3);
 }
 
+.btn-card-default {
+  background: rgba(255, 189, 46, 0.18);
+  color: #ffd66b;
+  border-color: rgba(255, 189, 46, 0.4);
+}
+
+.btn-card-default:hover {
+  background: rgba(255, 189, 46, 0.3);
+  border-color: rgba(255, 189, 46, 0.58);
+  color: #ffe08f;
+}
+
 /* ─── Budget Form ──────────────────────────────────────── */
 .budget-form-container {
   display: grid;
@@ -2339,8 +2351,12 @@ a:hover {
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
+}
+
+.form-row > .form-group {
+  min-width: 0;
 }
 
 .form-select {
@@ -2365,6 +2381,7 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  margin-bottom: 10px;
 }
 
 .budget-system-info-btn {
@@ -2372,10 +2389,12 @@ a:hover {
   background: rgba(108, 99, 255, 0.08);
   color: #c5c0ff;
   border-radius: var(--radius-full);
-  padding: 5px 12px;
+  padding: 7px 14px;
+  min-height: 34px;
   font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   transition: all var(--transition-fast);
 }
 
@@ -3202,6 +3221,25 @@ a:hover {
     min-width: 140px;
   }
 
+  .dashboard-section__header--budget {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .dashboard-quick-actions--budget {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .dashboard-quick-actions--budget .dashboard-section__badge {
+    align-self: center;
+  }
+
+  .dashboard-quick-actions--budget .btn-invest-shortcut {
+    min-width: 0;
+  }
+
   .type-selector {
     grid-template-columns: 1fr;
   }
@@ -3250,6 +3288,12 @@ a:hover {
   .budget-system-head {
     flex-direction: column;
     align-items: flex-start;
+    gap: 8px;
+  }
+
+  .budget-system-info-btn {
+    width: 100%;
+    justify-content: center;
   }
 
   .budget-stat {
@@ -3269,6 +3313,42 @@ a:hover {
 
   .dashboard-header {
     padding: 12px 16px;
+  }
+
+  .dashboard-section__header--budget h3 {
+    width: 100%;
+  }
+
+  .dashboard-quick-actions--budget {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px !important;
+  }
+
+  .dashboard-quick-actions--budget .dashboard-section__badge {
+    justify-self: start;
+  }
+
+  .dashboard-quick-actions--budget .btn-invest-shortcut {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .dashboard-quick-actions--budget .dashboard-section__badge {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .budget-card-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .btn-card {
+    min-height: 42px;
+    padding: 10px 12px;
   }
 
   .dashboard-header__logo {
@@ -4982,11 +5062,64 @@ a:hover {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  line-height: 1.2;
+  padding-right: 42px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 768px) {
   .form-input[type="date"] {
     font-size: 16px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 360px) {
+  .dashboard-main {
+    padding: 14px;
+  }
+
+  .dashboard-section {
+    margin-bottom: 22px;
+  }
+
+  .dashboard-section__header--budget {
+    margin-bottom: 12px;
+  }
+
+  .dashboard-quick-actions--budget .btn-invest-shortcut {
+    min-height: 44px;
+    font-size: 0.8125rem;
+  }
+
+  .budget-form {
+    padding: 18px 14px;
+  }
+
+  .form-row {
+    gap: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .budget-system-info-btn {
+    min-height: 40px;
+  }
+
+  .btn-card {
+    min-height: 44px;
+    font-size: 0.8125rem;
+  }
+
+  .form-input[type="date"] {
+    font-size: 15px;
+    padding-right: 36px;
   }
 }
 
@@ -5025,6 +5158,71 @@ a:hover {
   padding: 8px 16px;
   font-size: 0.8125rem;
   width: auto;
+}
+
+@media (max-width: 375px) {
+  /* Strict mode for Dashboard + Budget pages */
+  .dashboard-main {
+    padding: 14px;
+  }
+
+  .dashboard-section {
+    margin-bottom: 20px;
+  }
+
+  #budget-status .dashboard-section__header,
+  #recent-transactions .dashboard-section__header,
+  .category-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  #budget-status .dashboard-quick-actions,
+  #recent-transactions .dashboard-quick-actions,
+  .category-toolbar .dashboard-quick-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  #budget-status .dashboard-quick-actions .btn,
+  #recent-transactions .dashboard-quick-actions .btn,
+  .category-toolbar .dashboard-quick-actions .btn,
+  .category-toolbar__add {
+    width: 100% !important;
+    min-width: 0;
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .dashboard-section__badge,
+  .dashboard-section__count {
+    align-self: flex-start;
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .budget-card-actions {
+    gap: 10px;
+  }
+
+  .btn-card {
+    min-height: 44px;
+    font-size: 0.8125rem;
+  }
+
+  .budget-form {
+    padding: 18px 14px;
+  }
+
+  .budget-system-info-btn {
+    width: 100%;
+    min-height: 40px;
+  }
 }
 
 /* ─── Modal Box ──────────────────────────────────── */

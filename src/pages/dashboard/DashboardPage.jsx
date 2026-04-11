@@ -194,17 +194,17 @@ function DashboardPage() {
             {/* ── Budget Status Section ─────────────────── */}
             {budgetStatuses.length > 0 && (
               <section className="dashboard-section" id="budget-status">
-                <div className="dashboard-section__header">
+                <div className="dashboard-section__header dashboard-section__header--budget">
                   <h3>💰 Budget Hari Ini</h3>
                   <div
-                    className="dashboard-quick-actions"
+                    className="dashboard-quick-actions dashboard-quick-actions--budget"
                     style={{ gap: "8px" }}
                   >
                     <span className="dashboard-section__badge">
                       {budgets.active_count} aktif
                     </span>
                     <button
-                      className="btn btn-secondary btn-sm"
+                      className="btn btn-secondary btn-sm btn-invest-shortcut"
                       onClick={() => navigate("/budgets/invest-savings")}
                     >
                       Tabungan Invest
