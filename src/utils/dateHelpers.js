@@ -1,5 +1,30 @@
 import dayjs from "dayjs";
 
+function toDateOnlyString(value) {
+  return String(value ?? "")
+    .trim()
+    .slice(0, 10);
+}
+
+function parseDateOnlyToUtc(value) {
+  const dateOnly = toDateOnlyString(value);
+  const match = dateOnly.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  const day = Number(match[3]);
+
+  return new Date(Date.UTC(year, month, day));
+}
+
+function formatUtcDateToDateOnly(date) {
+  return date.toISOString().slice(0, 10);
+}
+
 /**
  * Check if a given date falls on a weekend (Saturday or Sunday).
  * @param {string|Date|dayjs.Dayjs} date
@@ -11,16 +36,24 @@ export function isWeekend(date) {
 }
 
 export function getWorkingDays(startDate, endDate, excludedDays = [0, 6]) {
-  let count = 0;
-  let current = dayjs(startDate);
-  const end = dayjs(endDate);
+  const start = parseDateOnlyToUtc(startDate);
+  const end = parseDateOnlyToUtc(endDate);
 
-  while (current.isBefore(end) || current.isSame(end, "day")) {
-    if (!excludedDays.includes(current.day())) {
-      count++;
-    }
-    current = current.add(1, "day");
+  if (!start || !end || start > end) {
+    return 0;
   }
+
+  let count = 0;
+  const current = new Date(start);
+
+  while (current <= end) {
+    const weekday = current.getUTCDay();
+    if (!excludedDays.includes(weekday)) {
+      count += 1;
+    }
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+
   return count;
 }
 
@@ -31,14 +64,21 @@ export function getWorkingDays(startDate, endDate, excludedDays = [0, 6]) {
  * @returns {string[]}
  */
 export function getDaysInRange(startDate, endDate) {
-  const days = [];
-  let current = dayjs(startDate);
-  const end = dayjs(endDate);
+  const start = parseDateOnlyToUtc(startDate);
+  const end = parseDateOnlyToUtc(endDate);
 
-  while (current.isBefore(end) || current.isSame(end, "day")) {
-    days.push(current.format("YYYY-MM-DD"));
-    current = current.add(1, "day");
+  if (!start || !end || start > end) {
+    return [];
   }
+
+  const days = [];
+  const current = new Date(start);
+
+  while (current <= end) {
+    days.push(formatUtcDateToDateOnly(current));
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+
   return days;
 }
 

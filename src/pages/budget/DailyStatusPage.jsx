@@ -4,6 +4,7 @@ import useBudgetStore from "../../store/budgetStore";
 import {
   formatCurrency,
   formatDate,
+  getDaysInRange,
   getDayName,
   isToday,
 } from "../../utils/dateHelpers";
@@ -51,7 +52,13 @@ function DailyStatusPage() {
       fetchDailyStatuses(period.id, period.start_date, period.end_date);
     }
     return () => clearDailyStatuses();
-  }, [period, fetchDailyStatuses, clearDailyStatuses]);
+  }, [
+    period?.id,
+    period?.start_date,
+    period?.end_date,
+    fetchDailyStatuses,
+    clearDailyStatuses,
+  ]);
 
   const getRowClass = (status) => {
     if (status.is_weekend) return "row-weekend";
@@ -70,6 +77,42 @@ function DailyStatusPage() {
 
     const lastDay = dailyStatuses[dailyStatuses.length - 1];
     return Number(lastDay?.invested_total || 0);
+  }, [period, dailyStatuses]);
+
+  const rangeDiagnostics = useMemo(() => {
+    if (!period) {
+      return {
+        expectedCount: 0,
+        fetchedCount: 0,
+        missingDates: [],
+        duplicateCount: 0,
+        isMismatch: false,
+      };
+    }
+
+    const expectedDates = getDaysInRange(period.start_date, period.end_date);
+    const fetchedDates = (dailyStatuses || [])
+      .map((status) => status?.date)
+      .filter(Boolean);
+    const fetchedUnique = new Set(fetchedDates);
+    const missingDates = expectedDates.filter(
+      (date) => !fetchedUnique.has(date),
+    );
+    const duplicateCount = Math.max(
+      0,
+      fetchedDates.length - fetchedUnique.size,
+    );
+
+    return {
+      expectedCount: expectedDates.length,
+      fetchedCount: fetchedDates.length,
+      missingDates,
+      duplicateCount,
+      isMismatch:
+        fetchedDates.length !== expectedDates.length ||
+        missingDates.length > 0 ||
+        duplicateCount > 0,
+    };
   }, [period, dailyStatuses]);
 
   if (!period && !dailyLoading) {
@@ -197,65 +240,87 @@ function DailyStatusPage() {
             <p>Memuat data harian...</p>
           </div>
         ) : (
-          <div className="status-table-wrapper" id="status-table-wrapper">
-            <table className="status-table" id="status-table">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Hari</th>
-                  <th>Base Budget</th>
-                  <th>Carry Over</th>
-                  <th>Efektif</th>
-                  <th>Terpakai</th>
-                  <th>Sisa</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dailyStatuses.map((status) => {
-                  const today = isToday(status.date);
-                  const rowClass = getRowClass(status);
-                  return (
-                    <tr
-                      key={status.date}
-                      className={`${rowClass} ${today ? "row-today" : ""}`}
-                      id={`row-${status.date}`}
-                    >
-                      <td className="cell-date">
-                        {formatDate(status.date, "DD MMM")}
-                      </td>
-                      <td className="cell-day">{getDayName(status.date)}</td>
-                      <td>{formatCurrency(status.base)}</td>
-                      <td>
-                        <span
-                          className={
-                            status.carry_over > 0
-                              ? "text-positive"
-                              : status.carry_over < 0
-                                ? "text-negative"
-                                : ""
-                          }
-                        >
-                          {status.carry_over > 0 ? "+" : ""}
-                          {formatCurrency(status.carry_over)}
-                        </span>
-                      </td>
-                      <td>{formatCurrency(status.effective_budget)}</td>
-                      <td className="text-spent">
-                        {formatCurrency(status.total_spent)}
-                      </td>
-                      <td>
-                        <span
-                          className={`remaining-badge ${status.remaining >= 0 ? "remaining-positive" : "remaining-negative"}`}
-                        >
-                          {formatCurrency(status.remaining)}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            {period && rangeDiagnostics.isMismatch && (
+              <div className="alert alert-warning">
+                <span>
+                  Data harian tidak lengkap ({rangeDiagnostics.fetchedCount}/
+                  {rangeDiagnostics.expectedCount}).
+                  {rangeDiagnostics.missingDates.length > 0 && (
+                    <>
+                      {" "}
+                      Tanggal hilang:{" "}
+                      {rangeDiagnostics.missingDates.slice(0, 3).join(", ")}
+                      {rangeDiagnostics.missingDates.length > 3 ? "..." : ""}.
+                    </>
+                  )}
+                  {rangeDiagnostics.duplicateCount > 0 && (
+                    <> Duplikasi: {rangeDiagnostics.duplicateCount}.</>
+                  )}
+                </span>
+              </div>
+            )}
+
+            <div className="status-table-wrapper" id="status-table-wrapper">
+              <table className="status-table" id="status-table">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Hari</th>
+                    <th>Base Budget</th>
+                    <th>Carry Over</th>
+                    <th>Efektif</th>
+                    <th>Terpakai</th>
+                    <th>Sisa</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dailyStatuses.map((status) => {
+                    const today = isToday(status.date);
+                    const rowClass = getRowClass(status);
+                    return (
+                      <tr
+                        key={status.date}
+                        className={`${rowClass} ${today ? "row-today" : ""}`}
+                        id={`row-${status.date}`}
+                      >
+                        <td className="cell-date">
+                          {formatDate(status.date, "DD MMM")}
+                        </td>
+                        <td className="cell-day">{getDayName(status.date)}</td>
+                        <td>{formatCurrency(status.base)}</td>
+                        <td>
+                          <span
+                            className={
+                              status.carry_over > 0
+                                ? "text-positive"
+                                : status.carry_over < 0
+                                  ? "text-negative"
+                                  : ""
+                            }
+                          >
+                            {status.carry_over > 0 ? "+" : ""}
+                            {formatCurrency(status.carry_over)}
+                          </span>
+                        </td>
+                        <td>{formatCurrency(status.effective_budget)}</td>
+                        <td className="text-spent">
+                          {formatCurrency(status.total_spent)}
+                        </td>
+                        <td>
+                          <span
+                            className={`remaining-badge ${status.remaining >= 0 ? "remaining-positive" : "remaining-negative"}`}
+                          >
+                            {formatCurrency(status.remaining)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </main>
     </div>

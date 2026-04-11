@@ -48,31 +48,42 @@ export async function getDailyStatus(id, date) {
  * Returns an array of DailyStatus objects sorted by date.
  */
 export async function fetchAllDailyStatuses(id, startDate, endDate) {
-  const days = getDaysInRange(startDate, endDate);
+  try {
+    const res = await api.get(`/api/budget-periods/${id}/daily-statuses`, {
+      params: {
+        start_date: startDate,
+        end_date: endDate,
+      },
+    });
 
-  // Batch in groups of 7 to avoid overwhelming the server
-  const results = [];
-  for (let i = 0; i < days.length; i += 7) {
-    const batch = days.slice(i, i + 7);
-    const batchResults = await Promise.all(
-      batch.map((date) =>
-        getDailyStatus(id, date)
-          .then((res) => res.data)
-          .catch(() => ({
-            date,
-            base: 0,
-            carry_over: 0,
-            effective_budget: 0,
-            total_spent: 0,
-            remaining: 0,
-            is_weekend: false,
-          }))
-      )
-    );
-    results.push(...batchResults);
+    return Array.isArray(res.data?.data) ? res.data.data : [];
+  } catch (error) {
+    // Backward-compatible fallback while backend deployment is rolling out.
+    const days = getDaysInRange(startDate, endDate);
+    const results = [];
+
+    for (let i = 0; i < days.length; i += 7) {
+      const batch = days.slice(i, i + 7);
+      const batchResults = await Promise.all(
+        batch.map((date) =>
+          getDailyStatus(id, date)
+            .then((res) => res.data)
+            .catch(() => ({
+              date,
+              base: 0,
+              carry_over: 0,
+              effective_budget: 0,
+              total_spent: 0,
+              remaining: 0,
+              is_weekend: false,
+            })),
+        ),
+      );
+      results.push(...batchResults);
+    }
+
+    return results;
   }
-
-  return results;
 }
 
 /**

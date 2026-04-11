@@ -15,6 +15,8 @@ const useBudgetStore = create((set, get) => ({
 
   dailyStatuses: [],
   dailyLoading: false,
+  dailyFetchKey: null,
+  dailyFetchRequestId: 0,
 
   /* ── Fetch all budget periods ──────────────────── */
   fetchPeriods: async () => {
@@ -68,11 +70,46 @@ const useBudgetStore = create((set, get) => ({
 
   /* ── Daily statuses for a period ───────────── */
   fetchDailyStatuses: async (id, startDate, endDate) => {
-    set({ dailyLoading: true });
+    const fetchKey = `${id}:${startDate}:${endDate}`;
+    const state = get();
+
+    // Prevent duplicate in-flight fetch for the exact same range.
+    if (state.dailyLoading && state.dailyFetchKey === fetchKey) {
+      return;
+    }
+
+    const requestId = state.dailyFetchRequestId + 1;
+    set({
+      dailyLoading: true,
+      dailyFetchKey: fetchKey,
+      dailyFetchRequestId: requestId,
+    });
+
     try {
       const statuses = await fetchAllDailyStatuses(id, startDate, endDate);
-      set({ dailyStatuses: statuses, dailyLoading: false });
+
+      // If another newer request is already running/completed, ignore stale result.
+      if (get().dailyFetchRequestId !== requestId) {
+        return;
+      }
+
+      const uniqueByDate = new Map();
+      for (const status of statuses || []) {
+        if (status?.date) {
+          uniqueByDate.set(status.date, status);
+        }
+      }
+
+      const normalizedStatuses = Array.from(uniqueByDate.values()).sort(
+        (a, b) => String(a.date).localeCompare(String(b.date)),
+      );
+
+      set({ dailyStatuses: normalizedStatuses, dailyLoading: false });
     } catch {
+      if (get().dailyFetchRequestId !== requestId) {
+        return;
+      }
+
       set({ dailyStatuses: [], dailyLoading: false });
     }
   },

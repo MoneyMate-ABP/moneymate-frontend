@@ -428,6 +428,12 @@ a:hover {
   color: #5ddb9b;
 }
 
+.alert-warning {
+  background: rgba(255, 184, 77, 0.1);
+  border: 1px solid rgba(255, 184, 77, 0.3);
+  color: #ffd08a;
+}
+
 .alert svg {
   width: 16px;
   height: 16px;
