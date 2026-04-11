@@ -196,9 +196,20 @@ function DashboardPage() {
               <section className="dashboard-section" id="budget-status">
                 <div className="dashboard-section__header">
                   <h3>💰 Budget Hari Ini</h3>
-                  <span className="dashboard-section__badge">
-                    {budgets.active_count} aktif
-                  </span>
+                  <div
+                    className="dashboard-quick-actions"
+                    style={{ gap: "8px" }}
+                  >
+                    <span className="dashboard-section__badge">
+                      {budgets.active_count} aktif
+                    </span>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => navigate("/budgets/invest-savings")}
+                    >
+                      Tabungan Invest
+                    </button>
+                  </div>
                 </div>
                 <div className="budget-status-list">
                   {budgetStatuses.map((b, i) => (
@@ -206,6 +217,8 @@ function DashboardPage() {
                       key={b.budget_period_id}
                       name={b.name}
                       categoryName={b.category_name}
+                      budgetSystem={b.budget_system}
+                      baseBudget={b.daily_status?.base}
                       effectiveBudget={b.daily_status?.effective_budget}
                       totalSpent={b.daily_status?.total_spent}
                       remaining={b.daily_status?.remaining}

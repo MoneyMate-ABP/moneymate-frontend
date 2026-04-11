@@ -82,3 +82,11 @@ export async function setDefaultBudgetPeriod(id) {
   const res = await api.post(`/api/budget-periods/${id}/set-default`);
   return res.data;
 }
+
+/**
+ * Get summary of savings produced by invest budget system.
+ */
+export async function getInvestSavingsSummary() {
+  const res = await api.get("/api/budget-periods/invest-savings");
+  return res.data; // { data: { total_invested, period_count, periods[] } }
+}

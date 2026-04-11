@@ -6,6 +6,7 @@ import CategoriesPage from "./pages/categories/CategoriesPage.jsx";
 import BudgetListPage from "./pages/budget/BudgetListPage.jsx";
 import BudgetFormPage from "./pages/budget/BudgetFormPage.jsx";
 import DailyStatusPage from "./pages/budget/DailyStatusPage.jsx";
+import InvestSavingsPage from "./pages/budget/InvestSavingsPage.jsx";
 import TransactionList from "./pages/transactions/TransactionList.jsx";
 import TransactionForm from "./pages/transactions/TransactionForm.jsx";
 import TransactionDetail from "./pages/transactions/TransactionDetail.jsx";
@@ -56,6 +57,7 @@ function App() {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="/budgets" element={<BudgetListPage />} />
+        <Route path="/budgets/invest-savings" element={<InvestSavingsPage />} />
         <Route path="/budgets/new" element={<BudgetFormPage />} />
         <Route path="/budgets/:id/edit" element={<BudgetFormPage />} />
         <Route path="/budgets/:id/status" element={<DailyStatusPage />} />

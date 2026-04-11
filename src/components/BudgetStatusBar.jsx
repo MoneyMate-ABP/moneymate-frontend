@@ -13,16 +13,25 @@
 function BudgetStatusBar({
   name,
   categoryName,
+  budgetSystem,
+  baseBudget,
   effectiveBudget,
   totalSpent,
   remaining,
   isWeekend,
   delay = 0,
 }) {
+  const isCarryOverSystem = budgetSystem === "carry_over";
+  const shownBudget = isCarryOverSystem
+    ? effectiveBudget
+    : (baseBudget ?? effectiveBudget);
   const isSurplus = remaining >= 0;
-  const percentage = effectiveBudget > 0
-    ? Math.min((totalSpent / effectiveBudget) * 100, 100)
-    : totalSpent > 0 ? 100 : 0;
+  const percentage =
+    shownBudget > 0
+      ? Math.min((totalSpent / shownBudget) * 100, 100)
+      : totalSpent > 0
+        ? 100
+        : 0;
 
   const formatCurrency = (val) =>
     new Intl.NumberFormat("id-ID", {
@@ -82,14 +91,19 @@ function BudgetStatusBar({
       {/* Details row */}
       <div className="budget-status-bar__details">
         <div className="budget-status-bar__detail">
-          <span className="budget-status-bar__detail-label">Budget Efektif</span>
+          <span className="budget-status-bar__detail-label">
+            {isCarryOverSystem ? "Budget Efektif" : "Budget Harian"}
+          </span>
           <span className="budget-status-bar__detail-value">
-            {formatCurrency(effectiveBudget)}
+            {formatCurrency(shownBudget)}
           </span>
         </div>
         <div className="budget-status-bar__detail">
           <span className="budget-status-bar__detail-label">Terpakai</span>
-          <span className="budget-status-bar__detail-value" style={{ color: "#ff6b7a" }}>
+          <span
+            className="budget-status-bar__detail-value"
+            style={{ color: "#ff6b7a" }}
+          >
             {formatCurrency(totalSpent)}
           </span>
         </div>
