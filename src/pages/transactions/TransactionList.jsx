@@ -121,6 +121,7 @@ const formatDate = (dateStr) =>
   });
 
 const getTodayDate = () => new Date().toISOString().slice(0, 10);
+const MAX_RECEIPT_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
 const formatFileSize = (bytes = 0) => {
   if (!bytes || bytes <= 0) return "0 B";
@@ -332,6 +333,13 @@ function TransactionList() {
 
   const handleScanFileChange = (event) => {
     const file = event.target.files?.[0] || null;
+
+    if (file && file.size > MAX_RECEIPT_FILE_SIZE_BYTES) {
+      setScanFile(null);
+      setScanError("Ukuran file terlalu besar. Maksimum 10MB.");
+      return;
+    }
+
     setScanFile(file);
     setScanError("");
   };
@@ -1112,7 +1120,7 @@ function TransactionList() {
                   <strong>
                     {scanFile ? "Ganti file struk" : "Pilih file struk"}
                   </strong>
-                  <span>Semua format gambar atau PDF. Maksimum 5MB.</span>
+                  <span>Semua format gambar atau PDF. Maksimum 10MB.</span>
                 </div>
               </label>
               <input
