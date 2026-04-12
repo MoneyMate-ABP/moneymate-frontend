@@ -123,6 +123,98 @@ const formatDate = (dateStr) =>
 const getTodayDate = () => new Date().toISOString().slice(0, 10);
 const MAX_RECEIPT_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Unable to load image"));
+    };
+
+    image.src = objectUrl;
+  });
+}
+
+function canvasToBlob(canvas, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Canvas export failed"));
+          return;
+        }
+        resolve(blob);
+      },
+      "image/jpeg",
+      quality,
+    );
+  });
+}
+
+async function compressReceiptImageFile(file) {
+  if (!file?.type?.startsWith("image/")) {
+    return file;
+  }
+
+  // Keep small images untouched.
+  if (file.size <= 900 * 1024) {
+    return file;
+  }
+
+  const image = await loadImageFromFile(file);
+  const maxDimension = 1920;
+  const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+  const targetWidth = Math.max(1, Math.round(image.width * scale));
+  const targetHeight = Math.max(1, Math.round(image.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const context = canvas.getContext("2d", { alpha: false });
+
+  if (!context) {
+    return file;
+  }
+
+  context.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+  const qualitySteps = [0.86, 0.78, 0.7, 0.62, 0.55, 0.48];
+  let bestBlob = null;
+
+  for (const quality of qualitySteps) {
+    const blob = await canvasToBlob(canvas, quality);
+
+    if (!bestBlob || blob.size < bestBlob.size) {
+      bestBlob = blob;
+    }
+
+    if (blob.size <= 900 * 1024) {
+      bestBlob = blob;
+      break;
+    }
+  }
+
+  if (!bestBlob) {
+    return file;
+  }
+
+  const normalizedName = (file.name || "receipt")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .concat(".jpg");
+
+  return new File([bestBlob], normalizedName, {
+    type: "image/jpeg",
+    lastModified: Date.now(),
+  });
+}
+
 const formatFileSize = (bytes = 0) => {
   if (!bytes || bytes <= 0) return "0 B";
   if (bytes < 1024) return `${bytes} B`;
@@ -359,7 +451,8 @@ function TransactionList() {
     setScanError("");
 
     try {
-      const response = await scanReceipt(scanFile);
+      const uploadFile = await compressReceiptImageFile(scanFile);
+      const response = await scanReceipt(uploadFile);
       const draft = response?.data || {};
       const resolvedType = draft.type === "income" ? "income" : "expense";
 
@@ -383,9 +476,12 @@ function TransactionList() {
       setScanUploadOpen(false);
       setScanReviewOpen(true);
     } catch (err) {
+      const statusCode = err?.response?.status;
       const message =
-        err.response?.data?.message ||
-        "Gagal mendeteksi struk. Coba file lain yang lebih jelas.";
+        statusCode === 413
+          ? "Ukuran file masih melebihi batas server. Coba foto dengan resolusi lebih kecil atau crop area struk."
+          : err.response?.data?.message ||
+            "Gagal mendeteksi struk. Coba file lain yang lebih jelas.";
       setScanError(message);
     } finally {
       setScanLoading(false);
