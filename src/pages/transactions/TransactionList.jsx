@@ -1109,15 +1109,17 @@ function TransactionList() {
                   <UploadCloudIcon />
                 </div>
                 <div className="receipt-upload__text">
-                  <strong>{scanFile ? "Ganti file struk" : "Pilih file struk"}</strong>
-                  <span>JPG, PNG, WEBP, atau PDF. Maksimum 5MB.</span>
+                  <strong>
+                    {scanFile ? "Ganti file struk" : "Pilih file struk"}
+                  </strong>
+                  <span>Semua format gambar atau PDF. Maksimum 5MB.</span>
                 </div>
               </label>
               <input
                 id="receipt-upload-input"
                 type="file"
                 className="receipt-upload__input"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
+                accept="image/*,application/pdf"
                 onChange={handleScanFileChange}
                 disabled={scanLoading}
               />
@@ -1129,9 +1131,12 @@ function TransactionList() {
                       <FileAttachmentIcon />
                     </div>
                     <div className="receipt-modal__file-meta">
-                      <strong className="receipt-modal__file-name">{scanFile.name}</strong>
+                      <strong className="receipt-modal__file-name">
+                        {scanFile.name}
+                      </strong>
                       <span>
-                        {getFileTypeLabel(scanFile.type)} • {formatFileSize(scanFile.size)}
+                        {getFileTypeLabel(scanFile.type)} •{" "}
+                        {formatFileSize(scanFile.size)}
                       </span>
                     </div>
                   </div>
