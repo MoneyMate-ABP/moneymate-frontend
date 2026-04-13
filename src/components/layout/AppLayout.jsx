@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import BottomNav from "./BottomNav";
+import InstallPrompt from "../InstallPrompt";
 
 /**
  * AppLayout — main layout for authenticated pages.
@@ -19,6 +20,7 @@ function AppLayout() {
         </main>
       </div>
       <BottomNav />
+      <InstallPrompt />
     </div>
   );
 }

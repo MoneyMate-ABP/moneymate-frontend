@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamu Sedang Offline — MoneyMate</title>
+    <style>
+        :root {
+            --color-bg: #1a1a2e;
+            --color-text: #f0f0f5;
+            --color-accent: #6c63ff;
+            --color-muted: rgba(240, 240, 245, 0.6);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            padding: 24px;
+            max-width: 400px;
+        }
+
+        .icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0 0 12px 0;
+            font-weight: 700;
+        }
+
+        p {
+            color: var(--color-muted);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            background-color: var(--color-accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, background-color 0.2s;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #7b73ff;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span class="icon">📡</span>
+        <h1>Kamu Sedang Offline</h1>
+        <p>Sepertinya koneksi internetmu terputus. Jangan khawatir, kamu masih bisa mengakses data yang sudah tersimpan sebelumnya.</p>
+        <button onclick="window.location.reload()" class="btn">Coba Lagi</button>
+    </div>
+</body>
+</html>
