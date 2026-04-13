@@ -4485,6 +4485,246 @@ a:hover {
   background: rgba(108, 99, 255, 0.08);
 }
 
+/* ── Scan Mode Toggle ────────────────────────────────── */
+.scan-mode-toggle {
+  display: flex;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: rgba(22, 33, 62, 0.45);
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.scan-mode-toggle__btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: calc(var(--radius-md) - 2px);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.scan-mode-toggle__btn:hover:not(.scan-mode-toggle__btn--active) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+}
+
+.scan-mode-toggle__btn--active {
+  background: rgba(108, 99, 255, 0.18);
+  color: var(--color-accent-hover);
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.12);
+}
+
+.scan-mode-toggle__emoji {
+  font-size: 0.875rem;
+}
+
+/* ── Mutation Review Modal ───────────────────────────── */
+.receipt-modal--mutation {
+  max-width: 680px;
+}
+
+.mutation-review__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(108, 99, 255, 0.08);
+  border: 1px solid rgba(108, 99, 255, 0.15);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.mutation-review__summary span {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.mutation-review__summary strong {
+  color: var(--color-accent-hover);
+}
+
+.mutation-review__select-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.mutation-review__select-all input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.mutation-review__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.mutation-review__list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.mutation-review__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mutation-review__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50px;
+}
+
+.mutation-item {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: rgba(22, 33, 62, 0.45);
+  transition: all var(--transition-fast);
+}
+
+.mutation-item--deselected {
+  opacity: 0.45;
+  filter: grayscale(0.5);
+}
+
+.mutation-item__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mutation-item__checkbox {
+  accent-color: var(--color-accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mutation-item__title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mutation-item__merchant {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mutation-item__amount {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  margin-left: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mutation-item__amount.expense { color: #ff6b7a; }
+.mutation-item__amount.income { color: #5ddb9b; }
+
+.mutation-item__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mutation-item__fields .form-group {
+  margin-bottom: 0;
+}
+
+.mutation-item__fields .form-label {
+  font-size: 0.6875rem;
+  margin-bottom: 3px;
+}
+
+.mutation-item__fields .form-input,
+.mutation-item__fields .form-select {
+  padding: 7px 10px;
+  font-size: 0.8125rem;
+  min-height: unset;
+}
+
+.mutation-item__fields .form-input.form-textarea {
+  min-height: 36px;
+  resize: none;
+}
+
+.mutation-item__field--full {
+  grid-column: 1 / -1;
+}
+
+.mutation-review__batch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mutation-review__batch-bar span {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+/* ── Mutation scan file list ─────────────────────────── */
+.receipt-modal__files {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .receipt-modal--mutation {
+    max-width: 100%;
+  }
+
+  .mutation-item__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .mutation-item__header {
+    flex-wrap: wrap;
+  }
+
+  .mutation-review__summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 /* ── Transaction Detail Modal ──────────────────────────── */
 .tx-detail__amount-hero {
   text-align: center;

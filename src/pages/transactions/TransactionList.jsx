@@ -7,6 +7,7 @@ import {
   deleteTransaction,
   createTransaction,
   scanReceipt,
+  scanMutation,
 } from "../../services/transactionService";
 import { getCategories } from "../../services/categoryService";
 import { getBudgetPeriods } from "../../services/budgetService";
@@ -328,6 +329,16 @@ function TransactionList() {
     budget_period_id: "",
   });
 
+  // Scan mode ("receipt" or "mutation")
+  const [scanMode, setScanMode] = useState("receipt");
+  const [scanFiles, setScanFiles] = useState([]);
+
+  // Mutation review
+  const [mutationReviewOpen, setMutationReviewOpen] = useState(false);
+  const [mutationItems, setMutationItems] = useState([]);
+  const [mutationSaving, setMutationSaving] = useState(false);
+  const [mutationError, setMutationError] = useState("");
+
   // Accordion open states
   const [accordionDate, setAccordionDate] = useState(true);
   const [accordionType, setAccordionType] = useState(true);
@@ -391,6 +402,8 @@ function TransactionList() {
   const openScanUploadModal = () => {
     setScanError("");
     setScanFile(null);
+    setScanFiles([]);
+    setScanMode("receipt");
     setScanUploadOpen(true);
   };
 
@@ -401,6 +414,8 @@ function TransactionList() {
 
     setScanError("");
     setScanFile(null);
+    setScanFiles([]);
+    setScanMode("receipt");
     setScanUploadOpen(true);
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete("openScan");
@@ -412,6 +427,7 @@ function TransactionList() {
     setScanUploadOpen(false);
     setScanError("");
     setScanFile(null);
+    setScanFiles([]);
   };
 
   const closeScanReviewModal = (force = false) => {
@@ -444,6 +460,7 @@ function TransactionList() {
 
   const handleRemoveScanFile = () => {
     setScanFile(null);
+    setScanFiles([]);
     setScanError("");
   };
 
@@ -497,6 +514,222 @@ function TransactionList() {
     } finally {
       setScanLoading(false);
     }
+  };
+
+  // Mutation scan handlers
+  const handleMutationFilesChange = (event) => {
+    const incoming = Array.from(event.target.files || []);
+    const tooBig = incoming.find((f) => f.size > MAX_RECEIPT_FILE_SIZE_BYTES);
+    if (tooBig) {
+      setScanError("Salah satu file terlalu besar. Maksimum 10MB per file.");
+      return;
+    }
+    setScanFiles((prev) => [...prev, ...incoming]);
+    setScanError("");
+  };
+
+  const handleRemoveMutationFile = (index) => {
+    setScanFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmitMutationScan = async () => {
+    if (scanFiles.length === 0) {
+      setScanError("Pilih minimal satu screenshot mutasi.");
+      return;
+    }
+
+    setScanLoading(true);
+    setScanError("");
+
+    try {
+      const compressedFiles = await Promise.all(
+        scanFiles.map((f) => compressReceiptImageFile(f)),
+      );
+      const response = await scanMutation(compressedFiles);
+      const rawItems = response?.data || [];
+
+      if (rawItems.length === 0) {
+        setScanError(
+          "AI tidak menemukan transaksi di screenshot. Coba gambar yang lebih jelas.",
+        );
+        return;
+      }
+
+      const defaultBp = budgetPeriods.find((bp) => bp.is_default);
+
+      const items = rawItems.map((item, idx) => {
+        const resolvedType = item.type === "income" ? "income" : "expense";
+        const resolvedCategoryId = findSuggestedCategoryId({
+          suggestedCategory: item.suggested_category,
+          note: item.note,
+          merchantName: item.merchant_name,
+          type: resolvedType,
+          categories,
+        });
+
+        return {
+          _key: idx,
+          selected: true,
+          type: resolvedType,
+          amount: item.amount ? String(Math.round(Number(item.amount))) : "",
+          date: item.date || getTodayDate(),
+          note: item.note || item.merchant_name || "",
+          category_id: resolvedCategoryId,
+          budget_period_id: defaultBp ? String(defaultBp.id) : "",
+          merchant_name: item.merchant_name || "",
+          suggested_category: item.suggested_category || "",
+          _error: "",
+          _saved: false,
+        };
+      });
+
+      setMutationItems(items);
+      setMutationError("");
+      setScanUploadOpen(false);
+      setMutationReviewOpen(true);
+    } catch (err) {
+      const statusCode = err?.response?.status;
+      const message =
+        statusCode === 413
+          ? "Salah satu file terlalu besar untuk server."
+          : statusCode === 503
+            ? "Layanan AI sedang sibuk, coba lagi dalam beberapa saat."
+            : err.response?.data?.message ||
+              "Gagal menganalisa mutasi. Coba screenshot yang lebih jelas.";
+      setScanError(message);
+    } finally {
+      setScanLoading(false);
+    }
+  };
+
+  const closeMutationReviewModal = (force = false) => {
+    if (mutationSaving && !force) return;
+    setMutationReviewOpen(false);
+    setMutationItems([]);
+    setMutationError("");
+  };
+
+  const handleMutationItemField = (index, field, value) => {
+    setMutationItems((prev) =>
+      prev.map((item, i) => {
+        if (i !== index) return item;
+        const updated = { ...item, [field]: value };
+        if (field === "type") {
+          const newCategoryId = findSuggestedCategoryId({
+            suggestedCategory: item.suggested_category,
+            note: item.note,
+            merchantName: item.merchant_name,
+            type: value,
+            categories,
+          });
+          updated.category_id = newCategoryId;
+        }
+        return updated;
+      }),
+    );
+  };
+
+  const handleMutationItemToggle = (index) => {
+    setMutationItems((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, selected: !item.selected } : item,
+      ),
+    );
+  };
+
+  const handleMutationSelectAll = (checked) => {
+    setMutationItems((prev) =>
+      prev.map((item) => (item._saved ? item : { ...item, selected: checked })),
+    );
+  };
+
+  const handleSaveMutationTransactions = async () => {
+    const toSave = mutationItems.filter(
+      (item) => item.selected && !item._saved,
+    );
+
+    if (toSave.length === 0) {
+      setMutationError("Tidak ada transaksi yang dipilih.");
+      return;
+    }
+
+    const invalid = toSave.find(
+      (item) =>
+        !item.category_id ||
+        !Number.isFinite(Number(item.amount)) ||
+        Number(item.amount) <= 0 ||
+        !item.date,
+    );
+
+    if (invalid) {
+      setMutationError(
+        "Pastikan semua transaksi terpilih memiliki kategori, jumlah > 0, dan tanggal.",
+      );
+      return;
+    }
+
+    setMutationSaving(true);
+    setMutationError("");
+
+    const results = await Promise.allSettled(
+      toSave.map((item) => {
+        const payload = {
+          type: item.type,
+          amount: Number(item.amount),
+          category_id: Number(item.category_id),
+          date: item.date,
+          note: item.note ? item.note.trim() : null,
+        };
+        if (item.budget_period_id) {
+          payload.budget_period_id = Number(item.budget_period_id);
+        }
+        return createTransaction(payload);
+      }),
+    );
+
+    const savedKeys = new Set();
+    const failedKeys = new Map();
+
+    toSave.forEach((item, idx) => {
+      const result = results[idx];
+      if (result.status === "fulfilled") {
+        savedKeys.add(item._key);
+      } else {
+        const msg =
+          result.reason?.response?.data?.message || "Gagal menyimpan.";
+        failedKeys.set(item._key, msg);
+      }
+    });
+
+    setMutationItems((prev) =>
+      prev.map((item) => {
+        if (savedKeys.has(item._key)) {
+          return { ...item, _saved: true, selected: false, _error: "" };
+        }
+        if (failedKeys.has(item._key)) {
+          return { ...item, _error: failedKeys.get(item._key) };
+        }
+        return item;
+      }),
+    );
+
+    const successCount = savedKeys.size;
+    const failCount = failedKeys.size;
+
+    if (failCount === 0) {
+      showToast(
+        `${successCount} transaksi dari mutasi berhasil ditambahkan! 🎉`,
+      );
+      closeMutationReviewModal(true);
+      await fetchData();
+    } else {
+      setMutationError(
+        `${successCount} berhasil, ${failCount} gagal. Cek dan coba simpan ulang.`,
+      );
+      await fetchData();
+    }
+
+    setMutationSaving(false);
   };
 
   const handleScanFormField = (field, value) => {
@@ -1194,7 +1427,7 @@ function TransactionList() {
         </div>
       )}
 
-      {/* ── Receipt Upload Modal ───────────────────────── */}
+      {/* ── Scan Upload Modal (Receipt + Mutation) ──────── */}
       {scanUploadOpen && (
         <div
           className="modal-overlay"
@@ -1206,7 +1439,7 @@ function TransactionList() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-header">
-              <h3>📄 Scan Struk dengan AI</h3>
+              <h3>📄 Scan dengan AI</h3>
               <button
                 className="modal-close"
                 onClick={closeScanUploadModal}
@@ -1217,60 +1450,147 @@ function TransactionList() {
             </div>
 
             <div className="modal-body receipt-modal__body">
+              {/* Scan Mode Toggle */}
+              <div className="scan-mode-toggle">
+                <button
+                  type="button"
+                  className={`scan-mode-toggle__btn ${scanMode === "receipt" ? "scan-mode-toggle__btn--active" : ""}`}
+                  onClick={() => { setScanMode("receipt"); setScanError(""); }}
+                  disabled={scanLoading}
+                >
+                  <span className="scan-mode-toggle__emoji">🧾</span>
+                  Struk
+                </button>
+                <button
+                  type="button"
+                  className={`scan-mode-toggle__btn ${scanMode === "mutation" ? "scan-mode-toggle__btn--active" : ""}`}
+                  onClick={() => { setScanMode("mutation"); setScanError(""); }}
+                  disabled={scanLoading}
+                >
+                  <span className="scan-mode-toggle__emoji">🏦</span>
+                  Mutasi Bank
+                </button>
+              </div>
+
               <p className="receipt-modal__hint">
-                Upload foto struk fisik atau file struk digital. AI akan isi
-                draft transaksi otomatis, lalu kamu bisa edit sebelum simpan.
+                {scanMode === "receipt"
+                  ? "Upload foto struk fisik atau file struk digital. AI akan isi draft transaksi otomatis, lalu kamu bisa edit sebelum simpan."
+                  : "Upload screenshot mutasi/e-statement bank. AI akan mengekstrak semua transaksi sekaligus."}
               </p>
 
-              <label
-                className={`receipt-upload ${scanFile ? "receipt-upload--selected" : ""}`}
-                htmlFor="receipt-upload-input"
-              >
-                <div className="receipt-upload__icon">
-                  <UploadCloudIcon />
-                </div>
-                <div className="receipt-upload__text">
-                  <strong>
-                    {scanFile ? "Ganti file struk" : "Pilih file struk"}
-                  </strong>
-                  <span>Semua format gambar atau PDF. Maksimum 10MB.</span>
-                </div>
-              </label>
-              <input
-                id="receipt-upload-input"
-                type="file"
-                className="receipt-upload__input"
-                accept="image/*,application/pdf"
-                onChange={handleScanFileChange}
-                disabled={scanLoading}
-              />
-
-              {scanFile && (
-                <div className="receipt-modal__file">
-                  <div className="receipt-modal__file-main">
-                    <div className="receipt-modal__file-icon">
-                      <FileAttachmentIcon />
+              {scanMode === "receipt" ? (
+                /* ── Receipt mode: single file ── */
+                <>
+                  <label
+                    className={`receipt-upload ${scanFile ? "receipt-upload--selected" : ""}`}
+                    htmlFor="receipt-upload-input"
+                  >
+                    <div className="receipt-upload__icon">
+                      <UploadCloudIcon />
                     </div>
-                    <div className="receipt-modal__file-meta">
-                      <strong className="receipt-modal__file-name">
-                        {scanFile.name}
+                    <div className="receipt-upload__text">
+                      <strong>
+                        {scanFile ? "Ganti file struk" : "Pilih file struk"}
                       </strong>
+                      <span>Semua format gambar atau PDF. Maksimum 10MB.</span>
+                    </div>
+                  </label>
+                  <input
+                    id="receipt-upload-input"
+                    type="file"
+                    className="receipt-upload__input"
+                    accept="image/*,application/pdf"
+                    onChange={handleScanFileChange}
+                    disabled={scanLoading}
+                  />
+
+                  {scanFile && (
+                    <div className="receipt-modal__file">
+                      <div className="receipt-modal__file-main">
+                        <div className="receipt-modal__file-icon">
+                          <FileAttachmentIcon />
+                        </div>
+                        <div className="receipt-modal__file-meta">
+                          <strong className="receipt-modal__file-name">
+                            {scanFile.name}
+                          </strong>
+                          <span>
+                            {getFileTypeLabel(scanFile.type)} •{" "}
+                            {formatFileSize(scanFile.size)}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="receipt-modal__file-remove"
+                        onClick={handleRemoveScanFile}
+                        disabled={scanLoading}
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* ── Mutation mode: multiple files ── */
+                <>
+                  <label
+                    className={`receipt-upload ${scanFiles.length > 0 ? "receipt-upload--selected" : ""}`}
+                    htmlFor="mutation-upload-input"
+                  >
+                    <div className="receipt-upload__icon">
+                      <UploadCloudIcon />
+                    </div>
+                    <div className="receipt-upload__text">
+                      <strong>Tambah screenshot mutasi</strong>
                       <span>
-                        {getFileTypeLabel(scanFile.type)} •{" "}
-                        {formatFileSize(scanFile.size)}
+                        Bisa pilih beberapa file sekaligus. Maks 10MB/file.
                       </span>
                     </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="receipt-modal__file-remove"
-                    onClick={handleRemoveScanFile}
+                  </label>
+                  <input
+                    id="mutation-upload-input"
+                    type="file"
+                    className="receipt-upload__input"
+                    accept="image/*,application/pdf"
+                    multiple
+                    onChange={handleMutationFilesChange}
                     disabled={scanLoading}
-                  >
-                    Hapus
-                  </button>
-                </div>
+                  />
+
+                  {scanFiles.length > 0 && (
+                    <div className="receipt-modal__files">
+                      {scanFiles.map((file, idx) => (
+                        <div className="receipt-modal__file" key={idx}>
+                          <div className="receipt-modal__file-main">
+                            <div className="receipt-modal__file-icon">
+                              <FileAttachmentIcon />
+                            </div>
+                            <div className="receipt-modal__file-meta">
+                              <strong className="receipt-modal__file-name">
+                                {file.name}
+                              </strong>
+                              <span>
+                                {getFileTypeLabel(file.type)} •{" "}
+                                {formatFileSize(file.size)}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="receipt-modal__file-remove"
+                            onClick={() => handleRemoveMutationFile(idx)}
+                            disabled={scanLoading}
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
+
               {scanError && <p className="form-error">{scanError}</p>}
             </div>
 
@@ -1284,12 +1604,19 @@ function TransactionList() {
               </button>
               <button
                 className="btn btn-primary"
-                onClick={handleSubmitReceiptScan}
-                disabled={scanLoading || !scanFile}
+                onClick={
+                  scanMode === "receipt"
+                    ? handleSubmitReceiptScan
+                    : handleSubmitMutationScan
+                }
+                disabled={
+                  scanLoading ||
+                  (scanMode === "receipt" ? !scanFile : scanFiles.length === 0)
+                }
                 id="submit-receipt-scan-btn"
               >
                 {scanLoading && <span className="spinner" />}
-                Scan Sekarang
+                {scanMode === "receipt" ? "Scan Struk" : `Scan ${scanFiles.length} Screenshot`}
               </button>
             </div>
           </div>
@@ -1479,6 +1806,286 @@ function TransactionList() {
                 {scanSaving && <span className="spinner" />}
                 Simpan Transaksi
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Mutation Review Modal ──────────────────────── */}
+      {mutationReviewOpen && (
+        <div
+          className="modal-overlay"
+          onClick={() => closeMutationReviewModal()}
+          id="mutation-review-modal-overlay"
+        >
+          <div
+            className="modal-content receipt-modal receipt-modal--mutation"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h3>🏦 Review Transaksi Mutasi</h3>
+              <button
+                className="modal-close"
+                onClick={() => closeMutationReviewModal()}
+                disabled={mutationSaving}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="modal-body receipt-modal__body">
+              <div className="mutation-review__summary">
+                <span>
+                  Ditemukan <strong>{mutationItems.length}</strong> transaksi
+                  {" • "}
+                  <strong>
+                    {mutationItems.filter((i) => i.selected && !i._saved).length}
+                  </strong>{" "}
+                  dipilih
+                  {mutationItems.some((i) => i._saved) && (
+                    <>
+                      {" • "}
+                      <strong style={{ color: "#5ddb9b" }}>
+                        {mutationItems.filter((i) => i._saved).length}
+                      </strong>{" "}
+                      tersimpan
+                    </>
+                  )}
+                </span>
+                <label className="mutation-review__select-all">
+                  <input
+                    type="checkbox"
+                    checked={
+                      mutationItems
+                        .filter((i) => !i._saved)
+                        .every((i) => i.selected) &&
+                      mutationItems.filter((i) => !i._saved).length > 0
+                    }
+                    onChange={(e) => handleMutationSelectAll(e.target.checked)}
+                    disabled={mutationSaving}
+                  />
+                  Pilih Semua
+                </label>
+              </div>
+
+              <div className="mutation-review__list">
+                {mutationItems.map((item, idx) => (
+                  <div
+                    key={item._key}
+                    className={`mutation-item ${
+                      !item.selected && !item._saved
+                        ? "mutation-item--deselected"
+                        : ""
+                    } ${item._saved ? "mutation-item--deselected" : ""}`}
+                  >
+                    <div className="mutation-item__header">
+                      {!item._saved && (
+                        <input
+                          type="checkbox"
+                          className="mutation-item__checkbox"
+                          checked={item.selected}
+                          onChange={() => handleMutationItemToggle(idx)}
+                          disabled={mutationSaving}
+                        />
+                      )}
+                      {item._saved && (
+                        <span style={{ fontSize: "0.875rem" }}>✅</span>
+                      )}
+                      <div className="mutation-item__title">
+                        <span className="mutation-item__merchant">
+                          {item.merchant_name || item.note || `#${idx + 1}`}
+                        </span>
+                      </div>
+                      <span
+                        className={`mutation-item__amount ${item.type}`}
+                      >
+                        {item.type === "expense" ? "-" : "+"}
+                        {formatCurrency(Number(item.amount) || 0)}
+                      </span>
+                    </div>
+
+                    {!item._saved && (
+                      <div className="mutation-item__fields">
+                        <div className="form-group">
+                          <label className="form-label">Tipe</label>
+                          <select
+                            className="form-input form-select"
+                            value={item.type}
+                            onChange={(e) =>
+                              handleMutationItemField(idx, "type", e.target.value)
+                            }
+                            disabled={mutationSaving}
+                          >
+                            <option value="expense">Pengeluaran</option>
+                            <option value="income">Pemasukan</option>
+                          </select>
+                        </div>
+
+                        <div className="form-group">
+                          <label className="form-label">
+                            Kategori <span className="form-required">*</span>
+                          </label>
+                          <select
+                            className="form-input form-select"
+                            value={item.category_id}
+                            onChange={(e) =>
+                              handleMutationItemField(
+                                idx,
+                                "category_id",
+                                e.target.value,
+                              )
+                            }
+                            disabled={mutationSaving}
+                          >
+                            <option value="">-- Pilih --</option>
+                            {categories
+                              .filter(
+                                (c) =>
+                                  c.type === item.type || c.type === "both",
+                              )
+                              .map((c) => (
+                                <option key={c.id} value={String(c.id)}>
+                                  {c.name}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+
+                        <div className="form-group">
+                          <label className="form-label">Periode Anggaran</label>
+                          <select
+                            className="form-input form-select"
+                            value={item.budget_period_id}
+                            onChange={(e) =>
+                              handleMutationItemField(
+                                idx,
+                                "budget_period_id",
+                                e.target.value,
+                              )
+                            }
+                            disabled={mutationSaving}
+                          >
+                            <option value="">-- Tanpa --</option>
+                            {budgetPeriods.map((bp) => (
+                              <option key={bp.id} value={bp.id}>
+                                {bp.name}
+                                {bp.is_default ? " ⭐" : ""}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="form-group">
+                          <label className="form-label">
+                            Jumlah <span className="form-required">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            className="form-input"
+                            min="1"
+                            value={item.amount}
+                            onChange={(e) =>
+                              handleMutationItemField(
+                                idx,
+                                "amount",
+                                e.target.value,
+                              )
+                            }
+                            disabled={mutationSaving}
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label className="form-label">
+                            Tanggal <span className="form-required">*</span>
+                          </label>
+                          <input
+                            type="date"
+                            className="form-input"
+                            value={item.date}
+                            onChange={(e) =>
+                              handleMutationItemField(
+                                idx,
+                                "date",
+                                e.target.value,
+                              )
+                            }
+                            disabled={mutationSaving}
+                          />
+                        </div>
+
+                        <div className="form-group mutation-item__field--full">
+                          <label className="form-label">Catatan</label>
+                          <textarea
+                            className="form-input form-textarea"
+                            rows={1}
+                            value={item.note}
+                            onChange={(e) =>
+                              handleMutationItemField(
+                                idx,
+                                "note",
+                                e.target.value,
+                              )
+                            }
+                            disabled={mutationSaving}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {item._error && (
+                      <p
+                        className="form-error"
+                        style={{ marginTop: 6, marginBottom: 0 }}
+                      >
+                        {item._error}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {mutationError && (
+                <p className="form-error" style={{ marginTop: 8 }}>
+                  {mutationError}
+                </p>
+              )}
+            </div>
+
+            <div className="modal-footer receipt-modal__footer">
+              <div className="mutation-review__batch-bar">
+                <span>
+                  {mutationItems.filter((i) => i.selected && !i._saved).length}{" "}
+                  transaksi dipilih
+                </span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => closeMutationReviewModal()}
+                    disabled={mutationSaving}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSaveMutationTransactions}
+                    disabled={
+                      mutationSaving ||
+                      mutationItems.filter((i) => i.selected && !i._saved)
+                        .length === 0
+                    }
+                    id="save-mutation-transactions-btn"
+                  >
+                    {mutationSaving && <span className="spinner" />}
+                    Simpan{" "}
+                    {
+                      mutationItems.filter((i) => i.selected && !i._saved)
+                        .length
+                    }{" "}
+                    Transaksi
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

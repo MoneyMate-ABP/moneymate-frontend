@@ -56,3 +56,22 @@ export async function scanReceipt(file) {
 
   return res.data; // { message, data }
 }
+
+/**
+ * Analyze uploaded bank mutation screenshots with AI and return extracted transactions
+ * @param {File[]} files - Array of screenshot files
+ */
+export async function scanMutation(files) {
+  const formData = new FormData();
+  for (const file of files) {
+    formData.append("receipts", file);
+  }
+
+  const res = await api.post("/api/transactions/mutation-scan", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return res.data; // { message, data: [...] }
+}
