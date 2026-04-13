@@ -28,15 +28,35 @@ async function getServiceWorkerRegistration() {
     return null;
   }
 
-  const existing = await navigator.serviceWorker.getRegistration();
+  const registrations = await navigator.serviceWorker.getRegistrations();
 
-  if (existing) {
+  // Cleanup legacy manual registration that can conflict on iOS Safari PWA.
+  await Promise.all(
+    registrations
+      .filter((registration) => {
+        const scriptUrl =
+          registration.active?.scriptURL ||
+          registration.waiting?.scriptURL ||
+          registration.installing?.scriptURL ||
+          "";
+
+        return scriptUrl.endsWith("/sw-push.js");
+      })
+      .map((registration) => registration.unregister()),
+  );
+
+  const existing = await navigator.serviceWorker.getRegistration("/");
+
+  if (existing && existing.active?.scriptURL?.endsWith("/sw.js")) {
     return existing;
   }
 
-  return navigator.serviceWorker.register("/sw.js", {
+  const registration = await navigator.serviceWorker.register("/sw.js", {
     updateViaCache: "none",
   });
+
+  await registration.update();
+  return registration;
 }
 
 function isPushSupportedInBrowser() {
