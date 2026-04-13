@@ -21,7 +21,8 @@ createRoot(document.getElementById("root")).render(
             backdropFilter: "blur(16px)",
             fontSize: "0.875rem",
             fontWeight: "500",
-            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            fontFamily:
+              "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
             boxShadow: "0 8px 40px rgba(0, 0, 0, 0.35)",
             padding: "12px 20px",
           },
@@ -48,3 +49,17 @@ createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </StrictMode>,
 );
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw-push.js")
+      .then((registration) => {
+        console.log("Service Worker registered:", registration);
+        registration.update();
+      })
+      .catch((error) => {
+        console.error("Service Worker registration failed:", error);
+      });
+  });
+}

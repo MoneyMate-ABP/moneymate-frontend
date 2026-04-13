@@ -2,8 +2,8 @@ self.addEventListener("push", (event) => {
   let payload = {
     title: "Budget hari ini siap!",
     body: "Budget efektif kamu hari ini sudah tersedia.",
-    icon: "/icons/icon-192x192.png",
-    badge: "/icons/badge-72x72.png",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
   };
 
   try {
