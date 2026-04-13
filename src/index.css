@@ -4291,7 +4291,134 @@ a:hover {
   opacity: 0;
 }
 
-/* ── Receipt Scan Modals ─────────────────────────────── */
+/* ── Month / Year Group Headers ──────────────────────── */
+.tx-month-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tx-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1rem;
+  margin: 0 .7rem;
+  border-radius: 3rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg-primary);
+}
+
+.tx-month-header__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tx-month-header__label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: 0.01em;
+}
+
+.tx-month-header__count {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+}
+
+.tx-month-header__totals {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tx-month-chip {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.tx-month-chip.income {
+  color: #5ddb9b;
+  background: rgba(93, 219, 155, 0.1);
+  border: 1px solid rgba(93, 219, 155, 0.2);
+}
+
+.tx-month-chip.expense {
+  color: #ff6b7a;
+  background: rgba(255, 107, 122, 0.1);
+  border: 1px solid rgba(255, 107, 122, 0.2);
+}
+
+/* Table month separator row */
+.tx-table__month-row td {
+  padding: 12px 16px;
+  background: var(--color-bg-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(108, 99, 255, 0.2);
+}
+
+.tx-table__month-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Budget month group */
+.budget-month-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.budget-month-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem 1rem;
+  margin: 0 .7rem;
+  border-radius: 3rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg-primary);
+}
+
+.budget-month-header__label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+
+.budget-month-header__count {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+}
+
+.budget-year-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 .receipt-modal {
   max-width: 560px;
 }

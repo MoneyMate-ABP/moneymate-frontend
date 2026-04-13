@@ -125,6 +125,36 @@ const formatDate = (dateStr) =>
 const getTodayDate = () => new Date().toISOString().slice(0, 10);
 const MAX_RECEIPT_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
+/**
+ * Groups a sorted (desc) transaction array by month.
+ * Returns an array of { key, label, items, totalIncome, totalExpense } in desc order.
+ */
+function groupByMonth(transactions) {
+  const groups = [];
+  const map = {};
+
+  for (const tx of transactions) {
+    const date = new Date(tx.date);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    if (!map[key]) {
+      const label = date.toLocaleDateString("id-ID", {
+        month: "long",
+        year: "numeric",
+      });
+      map[key] = { key, label, items: [], totalIncome: 0, totalExpense: 0 };
+      groups.push(map[key]);
+    }
+    map[key].items.push(tx);
+    if (tx.type === "income") {
+      map[key].totalIncome += Number(tx.amount);
+    } else {
+      map[key].totalExpense += Number(tx.amount);
+    }
+  }
+
+  return groups;
+}
+
 function loadImageFromFile(file) {
   return new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(file);
@@ -1089,145 +1119,172 @@ function TransactionList() {
                       </tr>
                     </thead>
                     <tbody>
-                      {paginated.map((tx, i) => {
-                        const isExp = tx.type === "expense";
-                        const hasLoc = tx.latitude && tx.longitude;
-                        return (
-                          <tr
-                            key={tx.id}
-                            className="tx-table__row"
-                            style={{ animationDelay: `${i * 40}ms` }}
-                          >
-                            <td className="tx-table__date">
-                              {formatDate(tx.date)}
-                            </td>
-                            <td>
-                              <CategoryBadge
-                                name={tx.category_name}
-                                type={tx.type}
-                              />
-                            </td>
-                            <td className="tx-table__note">
-                              <span>{tx.note || "—"}</span>
-                              {hasLoc && (
-                                <span
-                                  className="tx-table__location-dot"
-                                  title="Memiliki lokasi"
-                                >
-                                  <MapPinIcon />
-                                </span>
-                              )}
-                              {hasLoc && locationNames[tx.id] && (
-                                <span className="tx-location-preview">
-                                  {locationNames[tx.id]}
-                                </span>
-                              )}
-                            </td>
-                            <td
-                              className={`tx-table__amount ${isExp ? "expense" : "income"}`}
-                            >
-                              {isExp ? "-" : "+"}
-                              {formatCurrency(tx.amount)}
-                            </td>
-                            <td className="tx-table__actions">
-                              <Link
-                                to={`/transactions/${tx.id}`}
-                                className="category-card__btn category-card__btn--edit"
-                                title="Detail"
-                                id={`detail-tx-${tx.id}`}
-                              >
-                                <EyeIcon />
-                              </Link>
-                              <Link
-                                to={`/transactions/${tx.id}/edit`}
-                                className="category-card__btn category-card__btn--edit"
-                                title="Edit"
-                                id={`edit-tx-${tx.id}`}
-                              >
-                                <EditIcon />
-                              </Link>
-                              <button
-                                className="category-card__btn category-card__btn--delete"
-                                onClick={() => {
-                                  setDeletingTx(tx);
-                                  setDeleteOpen(true);
-                                }}
-                                title="Hapus"
-                                id={`delete-tx-${tx.id}`}
-                              >
-                                <TrashIcon />
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {groupByMonth(paginated).map((group) => (
+                        <tr key={group.key}>
+                          <td colSpan={5} style={{ padding: 0 }}>
+                            <div className="tx-month-group">
+                              <div className="tx-table__month-row">
+                                <div className="tx-table__month-cell">
+                                  <div className="tx-month-header__left">
+                                    <span className="tx-month-header__label">
+                                      {group.label}
+                                    </span>
+                                    <span className="tx-month-header__count">
+                                      {group.items.length}
+                                    </span>
+                                  </div>
+                                  <div className="tx-month-header__totals">
+                                    {group.totalIncome > 0 && (
+                                      <span className="tx-month-chip income">
+                                        +{formatCurrency(group.totalIncome)}
+                                      </span>
+                                    )}
+                                    {group.totalExpense > 0 && (
+                                      <span className="tx-month-chip expense">
+                                        -{formatCurrency(group.totalExpense)}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                <tbody>
+                                  {group.items.map((tx, i) => {
+                                    const isExp = tx.type === "expense";
+                                    const hasLoc = tx.latitude && tx.longitude;
+                                    return (
+                                      <tr key={tx.id} className="tx-table__row">
+                                        <td className="tx-table__date" style={{ width: "15%" }}>
+                                          {formatDate(tx.date)}
+                                        </td>
+                                        <td style={{ width: "20%" }}>
+                                          <CategoryBadge name={tx.category_name} type={tx.type} />
+                                        </td>
+                                        <td className="tx-table__note">
+                                          <span>{tx.note || "—"}</span>
+                                          {hasLoc && (
+                                            <span className="tx-table__location-dot" title="Memiliki lokasi">
+                                              <MapPinIcon />
+                                            </span>
+                                          )}
+                                        </td>
+                                        <td className={`tx-table__amount ${isExp ? "expense" : "income"}`} style={{ textAlign: "right", width: "15%" }}>
+                                          {isExp ? "-" : "+"}
+                                          {formatCurrency(tx.amount)}
+                                        </td>
+                                        <td className="tx-table__actions" style={{ width: "15%", textAlign: "center" }}>
+                                          <Link to={`/transactions/${tx.id}`} className="category-card__btn category-card__btn--edit" title="Detail">
+                                            <EyeIcon />
+                                          </Link>
+                                          <Link to={`/transactions/${tx.id}/edit`} className="category-card__btn category-card__btn--edit" title="Edit">
+                                            <EditIcon />
+                                          </Link>
+                                          <button
+                                            className="category-card__btn category-card__btn--delete"
+                                            onClick={() => {
+                                              setDeletingTx(tx);
+                                              setDeleteOpen(true);
+                                            }}
+                                            title="Hapus"
+                                          >
+                                            <TrashIcon />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
 
                 {/* Mobile Cards */}
                 <div className="tx-mobile-list" id="tx-mobile-list">
-                  {paginated.map((tx, i) => {
-                    const isExp = tx.type === "expense";
-                    const hasLoc = tx.latitude && tx.longitude;
-                    return (
-                      <div
-                        key={tx.id}
-                        className="tx-mobile-card"
-                        style={{ animationDelay: `${i * 40}ms` }}
-                        onClick={() => navigate(`/transactions/${tx.id}`)}
-                      >
-                        <div className="tx-mobile-card__top">
-                          <CategoryBadge
-                            name={tx.category_name}
-                            type={tx.type}
-                          />
-                          <span
-                            className={`tx-mobile-card__amount ${isExp ? "expense" : "income"}`}
-                          >
-                            {isExp ? "-" : "+"}
-                            {formatCurrency(tx.amount)}
-                          </span>
+                  {groupByMonth(paginated).map((group) => (
+                    <div key={group.key} className="tx-month-group">
+                      <div className="tx-month-header">
+                        <div className="tx-month-header__left">
+                          <span className="tx-month-header__label">{group.label}</span>
+                          <span className="tx-month-header__count">{group.items.length}</span>
                         </div>
-                        <div className="tx-mobile-card__bottom">
-                          <span className="tx-mobile-card__date">
-                            {formatDate(tx.date)}
-                          </span>
-                          <span className="tx-mobile-card__note">
-                            {tx.note || "—"}
-                            {hasLoc && <MapPinIcon />}
-                          </span>
-                        </div>
-                        {hasLoc && locationNames[tx.id] && (
-                          <span className="tx-location-preview tx-location-preview--mobile">
-                            {locationNames[tx.id]}
-                          </span>
-                        )}
-                        <div
-                          className="tx-mobile-card__actions"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Link
-                            to={`/transactions/${tx.id}/edit`}
-                            className="category-card__btn category-card__btn--edit"
-                            title="Edit"
-                          >
-                            <EditIcon />
-                          </Link>
-                          <button
-                            className="category-card__btn category-card__btn--delete"
-                            onClick={() => {
-                              setDeletingTx(tx);
-                              setDeleteOpen(true);
-                            }}
-                            title="Hapus"
-                          >
-                            <TrashIcon />
-                          </button>
+                        <div className="tx-month-header__totals">
+                          {group.totalIncome > 0 && (
+                            <span className="tx-month-chip income">+{formatCurrency(group.totalIncome)}</span>
+                          )}
+                          {group.totalExpense > 0 && (
+                            <span className="tx-month-chip expense">-{formatCurrency(group.totalExpense)}</span>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "8px 0" }}>
+                        {group.items.map((tx, i) => {
+                          const isExp = tx.type === "expense";
+                          const hasLoc = tx.latitude && tx.longitude;
+                          return (
+                            <div
+                              key={tx.id}
+                              className="tx-mobile-card"
+                              onClick={() => navigate(`/transactions/${tx.id}`)}
+                            >
+                              <div className="tx-mobile-card__top">
+                                <CategoryBadge
+                                  name={tx.category_name}
+                                  type={tx.type}
+                                />
+                                <span
+                                  className={`tx-mobile-card__amount ${isExp ? "expense" : "income"}`}
+                                >
+                                  {isExp ? "-" : "+"}
+                                  {formatCurrency(tx.amount)}
+                                </span>
+                              </div>
+                              <div className="tx-mobile-card__bottom">
+                                <span className="tx-mobile-card__date">
+                                  {formatDate(tx.date)}
+                                </span>
+                                <span className="tx-mobile-card__note">
+                                  {tx.note || "—"}
+                                  {hasLoc && <MapPinIcon />}
+                                </span>
+                              </div>
+                              {hasLoc && locationNames[tx.id] && (
+                                <span className="tx-location-preview tx-location-preview--mobile">
+                                  {locationNames[tx.id]}
+                                </span>
+                              )}
+                              <div
+                                className="tx-mobile-card__actions"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Link
+                                  to={`/transactions/${tx.id}/edit`}
+                                  className="category-card__btn category-card__btn--edit"
+                                  title="Edit"
+                                >
+                                  <EditIcon />
+                                </Link>
+                                <button
+                                  className="category-card__btn category-card__btn--delete"
+                                  onClick={() => {
+                                    setDeletingTx(tx);
+                                    setDeleteOpen(true);
+                                  }}
+                                  title="Hapus"
+                                >
+                                  <TrashIcon />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Load More */}
