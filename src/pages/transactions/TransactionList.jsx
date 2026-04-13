@@ -9,6 +9,7 @@ import {
   scanReceipt,
 } from "../../services/transactionService";
 import { getCategories } from "../../services/categoryService";
+import { getBudgetPeriods } from "../../services/budgetService";
 import CategoryBadge from "../../components/CategoryBadge";
 import ConfirmModal from "../../components/ConfirmModal";
 import DateRangePicker from "../../components/ui/DateRangePicker";
@@ -283,6 +284,7 @@ function TransactionList() {
 
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [budgetPeriods, setBudgetPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState(null);
@@ -323,6 +325,7 @@ function TransactionList() {
     date: getTodayDate(),
     note: "",
     category_id: "",
+    budget_period_id: "",
   });
 
   // Accordion open states
@@ -344,15 +347,17 @@ function TransactionList() {
     setLoading(true);
     setError("");
     try {
-      const [txRes, catRes] = await Promise.all([
+      const [txRes, catRes, bpRes] = await Promise.all([
         getTransactions(),
         getCategories(user?.id),
+        getBudgetPeriods(),
       ]);
       const sorted = (txRes.data || []).sort(
         (a, b) => new Date(b.date) - new Date(a.date),
       );
       setTransactions(sorted);
       setCategories(catRes.data || []);
+      setBudgetPeriods(bpRes.data || []);
     } catch {
       setError("Gagal memuat data transaksi.");
     } finally {
@@ -420,6 +425,7 @@ function TransactionList() {
       date: getTodayDate(),
       note: "",
       category_id: "",
+      budget_period_id: "",
     });
   };
 
@@ -464,6 +470,8 @@ function TransactionList() {
         categories,
       });
 
+      const defaultBp = budgetPeriods.find((bp) => bp.is_default);
+
       setScanPreview(draft);
       setScanForm({
         type: resolvedType,
@@ -471,6 +479,7 @@ function TransactionList() {
         date: draft.date || getTodayDate(),
         note: draft.note || draft.merchant_name || "",
         category_id: resolvedCategoryId,
+        budget_period_id: defaultBp ? String(defaultBp.id) : "",
       });
 
       setScanUploadOpen(false);
@@ -480,8 +489,10 @@ function TransactionList() {
       const message =
         statusCode === 413
           ? "Ukuran file masih melebihi batas server. Coba foto dengan resolusi lebih kecil atau crop area struk."
-          : err.response?.data?.message ||
-            "Gagal mendeteksi struk. Coba file lain yang lebih jelas.";
+          : statusCode === 503
+            ? "Layanan AI sedang sibuk, coba lagi dalam beberapa saat."
+            : err.response?.data?.message ||
+              "Gagal mendeteksi struk. Coba file lain yang lebih jelas.";
       setScanError(message);
     } finally {
       setScanLoading(false);
@@ -516,13 +527,19 @@ function TransactionList() {
     setScanError("");
 
     try {
-      await createTransaction({
+      const payload = {
         type: scanForm.type,
         amount: parsedAmount,
         category_id: Number(scanForm.category_id),
         date: scanForm.date,
         note: scanForm.note ? scanForm.note.trim() : null,
-      });
+      };
+
+      if (scanForm.budget_period_id) {
+        payload.budget_period_id = Number(scanForm.budget_period_id);
+      }
+
+      await createTransaction(payload);
 
       showToast("Transaksi dari struk berhasil ditambahkan! 🎉");
       closeScanReviewModal(true);
@@ -1371,6 +1388,29 @@ function TransactionList() {
                         {category.name}
                       </option>
                     ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="scan-tx-budget-period">
+                  Periode Anggaran{" "}
+                  <span className="form-optional">(opsional)</span>
+                </label>
+                <select
+                  id="scan-tx-budget-period"
+                  className="form-input form-select"
+                  value={scanForm.budget_period_id}
+                  onChange={(e) =>
+                    handleScanFormField("budget_period_id", e.target.value)
+                  }
+                >
+                  <option value="">-- Tanpa Periode Anggaran --</option>
+                  {budgetPeriods.map((bp) => (
+                    <option key={bp.id} value={bp.id}>
+                      {bp.name}
+                      {bp.is_default ? " ⭐ (Default)" : ""}
+                    </option>
+                  ))}
                 </select>
               </div>
 
