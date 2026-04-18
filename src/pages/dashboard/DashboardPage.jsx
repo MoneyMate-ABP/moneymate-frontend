@@ -128,7 +128,7 @@ function DashboardPage() {
                 style={{ marginBottom: "24px" }}
               >
                 <div className="dashboard-section__header">
-                  <h3>📅 Track Hari Ini</h3>
+                  <h3>Hari Ini</h3>
                 </div>
                 <section
                   className="dashboard-daily-summary"
@@ -160,7 +160,7 @@ function DashboardPage() {
               style={{ marginBottom: "24px" }}
             >
               <div className="dashboard-section__header">
-                <h3>📊 Track Bulan Ini</h3>
+                <h3>Bulan Ini</h3>
               </div>
               <section
                 className="dashboard-summary"
@@ -195,7 +195,7 @@ function DashboardPage() {
             {budgetStatuses.length > 0 && (
               <section className="dashboard-section" id="budget-status">
                 <div className="dashboard-section__header dashboard-section__header--budget">
-                  <h3>💰 Budget Hari Ini</h3>
+                  <h3>Anggaran Hari Ini</h3>
                   <div
                     className="dashboard-quick-actions dashboard-quick-actions--budget"
                     style={{ gap: "8px" }}
@@ -207,7 +207,7 @@ function DashboardPage() {
                       className="btn btn-secondary btn-sm btn-invest-shortcut"
                       onClick={() => navigate("/budgets/invest-savings")}
                     >
-                      Tabungan Invest
+                      Tabungan
                     </button>
                   </div>
                 </div>
@@ -239,7 +239,7 @@ function DashboardPage() {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "12px" }}
                 >
-                  <h3>📋 Transaksi Terbaru</h3>
+                  <h3>Transaksi Terbaru</h3>
                   {transactions.length > 0 && (
                     <span className="dashboard-section__count">
                       {transactions.length} terakhir

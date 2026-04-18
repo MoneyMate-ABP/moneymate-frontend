@@ -200,13 +200,13 @@ function Navbar() {
                               <p>{item.body}</p>
                               <div className="notification-item__meta">
                                 <span>
-                                  Budget efektif: Rp{" "}
+                                  Anggaran harian: Rp{" "}
                                   {formatRupiah(item.effective_budget)}
                                 </span>
                                 <span
                                   className={`notification-item__carry ${carryClass}`}
                                 >
-                                  Carry over: {carryPrefix}Rp{" "}
+                                  Sisa kemarin: {carryPrefix}Rp{" "}
                                   {formatRupiah(carryOverValue)}
                                 </span>
                               </div>

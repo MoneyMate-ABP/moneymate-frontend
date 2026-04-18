@@ -70,9 +70,9 @@ function BudgetListPage() {
   };
 
   const budgetSystemLabel = {
-    carry_over: "Carry Over",
-    invest: "Invest",
-    nothing: "Nothing",
+    carry_over: "Bawa Sisa",
+    invest: "Tabungan",
+    nothing: "Standar",
   };
 
   const paginated = periods.slice(0, visibleCount);
@@ -115,14 +115,14 @@ function BudgetListPage() {
             <BackIcon />
           </button>
           <div>
-            <h1 id="budget-list-title">Budget Period</h1>
-            <p>Kelola periode anggaran bulananmu</p>
+            <h1 id="budget-list-title">Anggaran Bulanan</h1>
+            <p>Kelola anggaran bulananmu</p>
           </div>
         </div>
 
         <div className="category-toolbar">
           <div className="category-count" style={{ margin: 0 }}>
-            <span>{periods.length} budget period ditemukan</span>
+            <span>{periods.length} anggaran ditemukan</span>
           </div>
           <div className="dashboard-quick-actions" style={{ gap: "8px" }}>
             <button
@@ -200,13 +200,13 @@ function BudgetListPage() {
                 <path d="M18 12a2 2 0 000 4h4v-4h-4z" />
               </svg>
             </div>
-            <h3>Belum ada budget</h3>
-            <p>Mulai atur keuanganmu dengan membuat budget period pertama.</p>
+            <h3>Belum ada anggaran</h3>
+            <p>Yuk, mulai buat anggaran pertamamu!</p>
             <button
               className="btn btn-primary"
               onClick={() => navigate("/budgets/new")}
             >
-              Buat Budget Pertama
+              Buat Anggaran
             </button>
           </div>
         ) : (
@@ -215,7 +215,9 @@ function BudgetListPage() {
               {groupedPeriods.map((group) => (
                 <div key={group.key} className="budget-month-group">
                   <div className="budget-month-header">
-                    <span className="budget-month-header__label">{group.label}</span>
+                    <span className="budget-month-header__label">
+                      {group.label}
+                    </span>
                     <span className="budget-month-header__count">
                       {group.items.length} periode
                     </span>
@@ -233,18 +235,26 @@ function BudgetListPage() {
                           <div className="budget-card-header">
                             <div className="budget-card-title-wrap">
                               <div className="budget-card-title-row">
-                                <h3 className="budget-card-name" style={{ margin: 0 }}>
+                                <h3
+                                  className="budget-card-name"
+                                  style={{ margin: 0 }}
+                                >
                                   {period.name}
                                 </h3>
                                 {period.is_default && (
-                                  <span className="badge badge-default">★ Default</span>
+                                  <span className="badge badge-default">
+                                    ★ Default
+                                  </span>
                                 )}
                               </div>
                               <span className="badge badge-system">
-                                {budgetSystemLabel[period.budget_system] || "Nothing"}
+                                {budgetSystemLabel[period.budget_system] ||
+                                  "Standar"}
                               </span>
                             </div>
-                            <span className={`badge ${cfg.className}`}>{cfg.label}</span>
+                            <span className={`badge ${cfg.className}`}>
+                              {cfg.label}
+                            </span>
                           </div>
 
                           <div className="budget-card-dates">
@@ -256,12 +266,20 @@ function BudgetListPage() {
                               width="14"
                               height="14"
                             >
-                              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                              <rect
+                                x="3"
+                                y="4"
+                                width="18"
+                                height="18"
+                                rx="2"
+                                ry="2"
+                              />
                               <line x1="16" y1="2" x2="16" y2="6" />
                               <line x1="8" y1="2" x2="8" y2="6" />
                               <line x1="3" y1="10" x2="21" y2="10" />
                             </svg>
-                            {formatDate(period.start_date)} — {formatDate(period.end_date)}
+                            {formatDate(period.start_date)} —{" "}
+                            {formatDate(period.end_date)}
                           </div>
 
                           {period.category_name && (
@@ -283,7 +301,9 @@ function BudgetListPage() {
 
                           <div className="budget-card-stats">
                             <div className="budget-stat">
-                              <span className="budget-stat-label">Total Budget</span>
+                              <span className="budget-stat-label">
+                                Total Budget
+                              </span>
                               <span className="budget-stat-value">
                                 {formatCurrency(period.total_budget)}
                               </span>
@@ -295,7 +315,9 @@ function BudgetListPage() {
                               </span>
                             </div>
                             <div className="budget-stat">
-                              <span className="budget-stat-label">Hari Kerja</span>
+                              <span className="budget-stat-label">
+                                Hari Kerja
+                              </span>
                               <span className="budget-stat-value">
                                 {period.working_days_count} hari
                               </span>
@@ -305,7 +327,9 @@ function BudgetListPage() {
                           <div className="budget-card-actions">
                             <button
                               className="btn-card btn-card-view"
-                              onClick={() => navigate(`/budgets/${period.id}/status`)}
+                              onClick={() =>
+                                navigate(`/budgets/${period.id}/status`)
+                              }
                               id={`btn-view-${period.id}`}
                             >
                               <svg
@@ -323,7 +347,9 @@ function BudgetListPage() {
                             </button>
                             <button
                               className="btn-card btn-card-edit"
-                              onClick={() => navigate(`/budgets/${period.id}/edit`)}
+                              onClick={() =>
+                                navigate(`/budgets/${period.id}/edit`)
+                              }
                               id={`btn-edit-${period.id}`}
                             >
                               <svg
@@ -410,7 +436,7 @@ function BudgetListPage() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Hapus Budget Period"
+        title="Hapus Anggaran"
         message={`Budget "${deleteTarget?.name}" akan dihapus permanen. Lanjutkan?`}
         warning="Tindakan ini tidak dapat dibatalkan."
         confirmText="Hapus"

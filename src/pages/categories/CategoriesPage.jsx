@@ -10,21 +10,42 @@ import {
 } from "../../services/categoryService";
 import { parseApiError } from "../../utils/validation";
 const PlusIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="12" y1="5" x2="12" y2="19" />
     <line x1="5" y1="12" x2="19" y2="12" />
   </svg>
 );
 
 const EditIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
 const TrashIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     <line x1="10" y1="11" x2="10" y2="17" />
@@ -33,14 +54,28 @@ const TrashIcon = () => (
 );
 
 const CloseIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
 
 const BackIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="19" y1="12" x2="5" y2="12" />
     <polyline points="12 19 5 12 12 5" />
   </svg>
@@ -48,9 +83,24 @@ const BackIcon = () => (
 
 /* ── Type badge config ─────────────────────────────────── */
 const typeConfig = {
-  expense: { label: "Pengeluaran", color: "#ff4757", bg: "rgba(255,71,87,0.1)", border: "rgba(255,71,87,0.25)" },
-  income:  { label: "Pemasukan",   color: "#2ecc71", bg: "rgba(46,204,113,0.1)", border: "rgba(46,204,113,0.25)" },
-  both:    { label: "Keduanya",    color: "#6c63ff", bg: "rgba(108,99,255,0.1)", border: "rgba(108,99,255,0.25)" },
+  expense: {
+    label: "Pengeluaran",
+    color: "#ff4757",
+    bg: "rgba(255,71,87,0.1)",
+    border: "rgba(255,71,87,0.25)",
+  },
+  income: {
+    label: "Pemasukan",
+    color: "#2ecc71",
+    bg: "rgba(46,204,113,0.1)",
+    border: "rgba(46,204,113,0.25)",
+  },
+  both: {
+    label: "Keduanya",
+    color: "#6c63ff",
+    bg: "rgba(108,99,255,0.1)",
+    border: "rgba(108,99,255,0.25)",
+  },
 };
 
 const typeEmoji = { expense: "💸", income: "💰", both: "🔄" };
@@ -177,12 +227,21 @@ function CategoryModal({
 }
 
 /* ── Delete Confirmation Modal ─────────────────────────── */
-function DeleteModal({ isOpen, onClose, onConfirm, categoryName, isSubmitting }) {
+function DeleteModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  categoryName,
+  isSubmitting,
+}) {
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content modal-content--sm" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-content modal-content--sm"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h3>Hapus Kategori</h3>
           <button className="modal-close" onClick={onClose}>
@@ -193,7 +252,8 @@ function DeleteModal({ isOpen, onClose, onConfirm, categoryName, isSubmitting })
         <div className="delete-modal__body">
           <div className="delete-modal__icon">🗑️</div>
           <p>
-            Yakin ingin menghapus kategori <strong>&quot;{categoryName}&quot;</strong>?
+            Yakin ingin menghapus kategori{" "}
+            <strong>&quot;{categoryName}&quot;</strong>?
           </p>
           <span className="delete-modal__warning">
             Kategori yang sudah digunakan di transaksi tidak bisa dihapus.
@@ -248,7 +308,9 @@ function CategoriesPage() {
   const [visibleCount, setVisibleCount] = useState(20);
   const itemsPerPage = 20;
 
-  useEffect(() => { setVisibleCount(itemsPerPage); }, [filterType, searchQuery]);
+  useEffect(() => {
+    setVisibleCount(itemsPerPage);
+  }, [filterType, searchQuery]);
 
   const showToast = useCallback((message, type = "success") => {
     setToast({ message, type });
@@ -274,7 +336,6 @@ function CategoriesPage() {
     fetchCategories();
   }, [fetchCategories]);
 
-
   // Create / Update
   const handleSubmit = async ({ name, type }) => {
     setModalSubmitError("");
@@ -282,10 +343,10 @@ function CategoriesPage() {
     try {
       if (editingCategory) {
         await updateCategory(editingCategory.id, { name, type });
-        showToast("Kategori berhasil diperbarui! ✨");
+        showToast("Kategori berhasil diperbarui.");
       } else {
         await createCategory({ name, type });
-        showToast("Kategori baru berhasil ditambahkan! 🎉");
+        showToast("Kategori berhasil ditambahkan.");
       }
       setModalOpen(false);
       setEditingCategory(null);
@@ -304,7 +365,7 @@ function CategoriesPage() {
     setSubmitting(true);
     try {
       await deleteCategory(deletingCategory.id);
-      showToast("Kategori berhasil dihapus! 🗑️");
+      showToast("Kategori berhasil dihapus.");
       setDeleteModalOpen(false);
       setDeletingCategory(null);
       await fetchCategories();
@@ -339,7 +400,9 @@ function CategoriesPage() {
   // Filtered categories
   const filtered = categories.filter((c) => {
     const matchesType = filterType === "all" || c.type === filterType;
-    const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = c.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     return matchesType && matchesSearch;
   });
 
@@ -462,79 +525,82 @@ function CategoriesPage() {
               <>
                 <div className="category-grid" id="category-list">
                   {paginated.map((cat, index) => {
-                  const cfg = typeConfig[cat.type] || typeConfig.expense;
-                  return (
-                    <div
-                      key={cat.id}
-                      className="category-card"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <div className="category-card__left">
-                        <div
-                          className="category-card__emoji"
-                          style={{
-                            background: cfg.bg,
-                            borderColor: cfg.border,
-                          }}
-                        >
-                          {typeEmoji[cat.type] || "📁"}
-                        </div>
-                        <div className="category-card__info">
-                          <span className="category-card__name">
-                            {cat.name}
-                          </span>
-                          <span
-                            className="category-card__type"
+                    const cfg = typeConfig[cat.type] || typeConfig.expense;
+                    return (
+                      <div
+                        key={cat.id}
+                        className="category-card"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <div className="category-card__left">
+                          <div
+                            className="category-card__emoji"
                             style={{
-                              color: cfg.color,
                               background: cfg.bg,
                               borderColor: cfg.border,
                             }}
                           >
-                            {cfg.label}
-                          </span>
+                            {typeEmoji[cat.type] || "📁"}
+                          </div>
+                          <div className="category-card__info">
+                            <span className="category-card__name">
+                              {cat.name}
+                            </span>
+                            <span
+                              className="category-card__type"
+                              style={{
+                                color: cfg.color,
+                                background: cfg.bg,
+                                borderColor: cfg.border,
+                              }}
+                            >
+                              {cfg.label}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="category-card__actions">
+                          <button
+                            className="category-card__btn category-card__btn--edit"
+                            onClick={() => openEdit(cat)}
+                            title="Edit"
+                            id={`edit-category-${cat.id}`}
+                          >
+                            <EditIcon />
+                          </button>
+                          <button
+                            className="category-card__btn category-card__btn--delete"
+                            onClick={() => openDelete(cat)}
+                            title="Hapus"
+                            id={`delete-category-${cat.id}`}
+                          >
+                            <TrashIcon />
+                          </button>
                         </div>
                       </div>
-                      <div className="category-card__actions">
-                        <button
-                          className="category-card__btn category-card__btn--edit"
-                          onClick={() => openEdit(cat)}
-                          title="Edit"
-                          id={`edit-category-${cat.id}`}
-                        >
-                          <EditIcon />
-                        </button>
-                        <button
-                          className="category-card__btn category-card__btn--delete"
-                          onClick={() => openDelete(cat)}
-                          title="Hapus"
-                          id={`delete-category-${cat.id}`}
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
 
-              {/* Load More */}
-              {visibleCount < filtered.length ? (
-                <div className="load-more-container">
-                  <button
-                    className="btn load-more-btn"
-                    onClick={() => setVisibleCount((prev) => prev + itemsPerPage)}
-                  >
-                    Tampilkan lebih banyak ({filtered.length - visibleCount} tersisa)
-                  </button>
-                </div>
-              ) : filtered.length > itemsPerPage ? (
-                <div className="load-more-end">
-                  <span>Semua kategori ditampilkan</span>
-                </div>
-              ) : null}
-            </>
-          )}
+                {/* Load More */}
+                {visibleCount < filtered.length ? (
+                  <div className="load-more-container">
+                    <button
+                      className="btn load-more-btn"
+                      onClick={() =>
+                        setVisibleCount((prev) => prev + itemsPerPage)
+                      }
+                    >
+                      Tampilkan lebih banyak ({filtered.length - visibleCount}{" "}
+                      tersisa)
+                    </button>
+                  </div>
+                ) : filtered.length > itemsPerPage ? (
+                  <div className="load-more-end">
+                    <span>Semua kategori ditampilkan</span>
+                  </div>
+                ) : null}
+              </>
+            )}
           </>
         )}
       </main>

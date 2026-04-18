@@ -367,10 +367,10 @@ function TransactionsPage() {
     try {
       if (editingTx) {
         await updateTransaction(editingTx.id, data);
-        showToast("Transaksi berhasil diperbarui! ✨");
+        showToast("Transaksi berhasil diperbarui.");
       } else {
         await createTransaction(data);
-        showToast("Transaksi berhasil ditambahkan! 🎉");
+        showToast("Transaksi berhasil ditambahkan.");
       }
       setFormOpen(false);
       setEditingTx(null);
@@ -389,7 +389,7 @@ function TransactionsPage() {
     setSubmitting(true);
     try {
       await deleteTransaction(deletingTx.id);
-      showToast("Transaksi berhasil dihapus! 🗑️");
+      showToast("Transaksi berhasil dihapus.");
       setDeleteOpen(false);
       setDeletingTx(null);
       await fetchData();
@@ -583,19 +583,19 @@ function TransactionsPage() {
             {/* ── Summary Mini Cards ─────────────────────── */}
             <div className="tx-mini-summary" id="tx-summary">
               <div className="tx-mini-card tx-mini-card--income">
-                <span className="tx-mini-card__label">💰 Pemasukan</span>
+                <span className="tx-mini-card__label">Pemasukan</span>
                 <span className="tx-mini-card__value income">
                   {formatCurrency(totalIncome)}
                 </span>
               </div>
               <div className="tx-mini-card tx-mini-card--expense">
-                <span className="tx-mini-card__label">💸 Pengeluaran</span>
+                <span className="tx-mini-card__label">Pengeluaran</span>
                 <span className="tx-mini-card__value expense">
                   {formatCurrency(totalExpense)}
                 </span>
               </div>
               <div className="tx-mini-card tx-mini-card--balance">
-                <span className="tx-mini-card__label">💵 Selisih</span>
+                <span className="tx-mini-card__label">Selisih</span>
                 <span
                   className={`tx-mini-card__value ${totalIncome - totalExpense >= 0 ? "income" : "expense"}`}
                 >

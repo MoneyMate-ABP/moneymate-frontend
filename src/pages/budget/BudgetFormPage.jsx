@@ -30,25 +30,26 @@ const WEEKDAYS = [
   { value: 3, label: "Rabu" },
   { value: 4, label: "Kamis" },
   { value: 5, label: "Jumat" },
-  { value: 6, label: "Sabtu" }
+  { value: 6, label: "Sabtu" },
 ];
 
 const BUDGET_SYSTEM_OPTIONS = [
   {
     value: "nothing",
-    label: "Nothing System",
-    description: "Sisa atau minus hari ini tidak dibawa ke hari berikutnya.",
+    label: "Standar",
+    description:
+      "Setiap hari dimulai dari budget yang sama, tanpa membawa sisa atau minus.",
   },
   {
     value: "carry_over",
-    label: "Carry Over System",
-    description: "Sisa atau minus hari ini dibawa ke budget efektif besok.",
+    label: "Bawa Sisa",
+    description: "Sisa atau minus hari ini akan ditambahkan ke budget besok.",
   },
   {
     value: "invest",
-    label: "Invest System",
+    label: "Tabungan",
     description:
-      "Sisa positif hari ini masuk ke tabungan, tidak dibawa ke besok.",
+      "Sisa positif hari ini disimpan sebagai tabungan, tidak dibawa ke besok.",
   },
 ];
 
@@ -58,7 +59,8 @@ function BudgetFormPage() {
   const isEdit = Boolean(id);
   const userId = useAuthStore((s) => s.user?.id);
 
-  const { periods, createPeriod, updatePeriod, fetchPeriods } = useBudgetStore();
+  const { periods, createPeriod, updatePeriod, fetchPeriods } =
+    useBudgetStore();
 
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
@@ -100,7 +102,7 @@ function BudgetFormPage() {
   useEffect(() => {
     if (isEdit) {
       let period = periods.find((p) => p.id === Number(id));
-      
+
       const applyData = (p) => {
         reset({
           name: p.name,
@@ -143,9 +145,15 @@ function BudgetFormPage() {
 
     const totalDays = end.diff(start, "day") + 1;
     // ensure excludedArray is an array of numbers
-    const excludedArray = Array.isArray(watchedExcluded) ? watchedExcluded.map(Number) : [];
-    
-    const workingDays = getWorkingDays(watchedStartDate, watchedEndDate, excludedArray);
+    const excludedArray = Array.isArray(watchedExcluded)
+      ? watchedExcluded.map(Number)
+      : [];
+
+    const workingDays = getWorkingDays(
+      watchedStartDate,
+      watchedEndDate,
+      excludedArray,
+    );
     const weekendDays = totalDays - workingDays;
     const budget = parseFloat(watchedTotalBudget) || 0;
     const dailyBudget = workingDays > 0 ? budget / workingDays : 0;
@@ -193,11 +201,11 @@ function BudgetFormPage() {
           </button>
           <div>
             <h1 id="budget-form-title">
-              {isEdit ? "Edit Budget Period" : "Buat Budget Period"}
+              {isEdit ? "Edit Anggaran" : "Buat Anggaran"}
             </h1>
             <p>
               {isEdit
-                ? "Perbarui detail budget period"
+                ? "Perbarui detail anggaran"
                 : "Atur anggaran untuk periode tertentu"}
             </p>
           </div>
@@ -307,7 +315,7 @@ function BudgetFormPage() {
             <div className="form-group">
               <div className="budget-system-head">
                 <label className="form-label" htmlFor="input-budget-system">
-                  Budget System
+                  Sistem Anggaran
                 </label>
                 <button
                   type="button"
@@ -329,14 +337,12 @@ function BudgetFormPage() {
                 ))}
               </select>
               <p className="form-hint">
-                Default: <strong>Nothing System</strong>.
+                Default: <strong>Standar</strong>.
               </p>
             </div>
 
             <div className="form-group">
-              <label className="form-label">
-                Custom Excluded Days (Hari yang tidak dihitung dalam budget)
-              </label>
+              <label className="form-label">Hari yang Tidak Dihitung</label>
               <div className="excluded-days-list">
                 {WEEKDAYS.map((day) => (
                   <label key={day.value} className="excluded-day-chip">
@@ -418,7 +424,7 @@ function BudgetFormPage() {
                   <span className="preview-stat-value">
                     {preview.weekendDays}
                   </span>
-                  <span className="preview-stat-label">Hari Excluded</span>
+                  <span className="preview-stat-label">Hari Dilewati</span>
                 </div>
               </div>
 
@@ -446,8 +452,8 @@ function BudgetFormPage() {
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
-              Budget harian = Total Budget ÷ Hari Dihitung. Hari Excluded
-              mendapat budget Rp 0 (carry-over tetap aktif).
+              Budget harian = Total Budget ÷ Hari Dihitung. Hari yang dilewati
+              mendapat budget Rp 0.
             </div>
           </div>
         </div>
@@ -462,7 +468,7 @@ function BudgetFormPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="modal-header">
-                <h3>Informasi Budget System</h3>
+                <h3>Tentang Sistem Anggaran</h3>
                 <button
                   type="button"
                   className="btn-close"

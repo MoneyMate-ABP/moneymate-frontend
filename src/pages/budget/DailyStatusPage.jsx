@@ -38,7 +38,7 @@ function DailyStatusPage() {
   // Find the period from store
   const period = useMemo(
     () => periods.find((p) => p.id === Number(id)),
-    [periods, id]
+    [periods, id],
   );
 
   // Fetch periods if not loaded
@@ -217,11 +217,11 @@ function DailyStatusPage() {
         <div className="status-legend">
           <div className="legend-item">
             <span className="legend-dot legend-dot-surplus" />
-            Surplus
+            Lebih
           </div>
           <div className="legend-item">
             <span className="legend-dot legend-dot-deficit" />
-            Deficit
+            Kurang
           </div>
           <div className="legend-item">
             <span className="legend-dot legend-dot-weekend" />
@@ -267,9 +267,9 @@ function DailyStatusPage() {
                   <tr>
                     <th>Tanggal</th>
                     <th>Hari</th>
-                    <th>Base Budget</th>
-                    <th>Carry Over</th>
-                    <th>Efektif</th>
+                    <th>Budget Dasar</th>
+                    <th>Sisa Kemarin</th>
+                    <th>Total Hari Ini</th>
                     <th>Terpakai</th>
                     <th>Sisa</th>
                   </tr>

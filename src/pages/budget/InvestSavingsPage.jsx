@@ -70,8 +70,8 @@ function InvestSavingsPage() {
             <BackIcon />
           </button>
           <div>
-            <h1 id="invest-savings-title">Tabungan Invest</h1>
-            <p>Total tabungan dari budget system: Invest</p>
+            <h1 id="invest-savings-title">Tabungan</h1>
+            <p>Kumpulan sisa anggaran yang berhasil kamu tabung</p>
           </div>
         </div>
 
@@ -93,9 +93,7 @@ function InvestSavingsPage() {
                   💰
                 </div>
                 <div className="summary-card__content">
-                  <span className="summary-card__label">
-                    Total Tabungan Invest
-                  </span>
+                  <span className="summary-card__label">Total Tabungan</span>
                   <strong className="summary-card__amount">
                     {formatCurrency(summary.total_invested || 0)}
                   </strong>
@@ -106,7 +104,7 @@ function InvestSavingsPage() {
                   📦
                 </div>
                 <div className="summary-card__content">
-                  <span className="summary-card__label">Period Invest</span>
+                  <span className="summary-card__label">Periode</span>
                   <strong className="summary-card__amount">
                     {summary.period_count || 0}
                   </strong>
@@ -117,16 +115,16 @@ function InvestSavingsPage() {
             {summary.periods?.length === 0 ? (
               <div className="empty-state" id="empty-invest-state">
                 <div className="empty-icon">🏦</div>
-                <h3>Belum ada budget invest</h3>
+                <h3>Belum ada tabungan</h3>
                 <p>
-                  Buat budget period dengan system Invest untuk mulai menabung
+                  Buat anggaran dengan sistem Tabungan untuk mulai menabung
                   otomatis.
                 </p>
                 <button
                   className="btn btn-primary"
                   onClick={() => navigate("/budgets/new")}
                 >
-                  Buat Budget Invest
+                  Buat Anggaran Tabungan
                 </button>
               </div>
             ) : (
@@ -147,7 +145,7 @@ function InvestSavingsPage() {
                           </span>
                         )}
                       </div>
-                      <span className="badge badge-system">Invest</span>
+                      <span className="badge badge-system">Tabungan</span>
                     </div>
 
                     <div className="budget-card-dates">

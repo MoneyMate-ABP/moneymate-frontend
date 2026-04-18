@@ -8,14 +8,32 @@ import usePushNotification from "../../hooks/usePushNotification";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
 const BackIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width="16"
+    height="16"
+  >
     <line x1="19" y1="12" x2="5" y2="12" />
     <polyline points="12 19 5 12 12 5" />
   </svg>
 );
 
 const LogoutIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width="18"
+    height="18"
+  >
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" y1="12" x2="9" y2="12" />
@@ -23,7 +41,16 @@ const LogoutIcon = () => (
 );
 
 const BellIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width="18"
+    height="18"
+  >
     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
@@ -196,8 +223,8 @@ export default function ProfilePage() {
                   isSupported &&
                   permission !== "denied" && (
                     <p>
-                      Terima ringkasan budget efektif harian langsung dari
-                      sistem.
+                      Dapatkan pengingat anggaran harianmu setiap pagi jam
+                      08:00.
                     </p>
                   )}
               </div>
@@ -275,8 +302,8 @@ export default function ProfilePage() {
         onClose={() => setShowDisableConfirm(false)}
         onConfirm={confirmDisableNotification}
         title="Matikan Notifikasi?"
-        message="Yakin ingin mematikan notifikasi peringatan anggaran?"
-        warning="Kamu mungkin akan melewatkan info penting soal keuanganmu jika ini dimatikan."
+        message="Yakin mau matiin pengingat anggaran harian?"
+        warning="Kalau dimatikan, kamu nggak akan dapat pengingat anggaran harian lagi."
         confirmText="Ya, Matikan"
         cancelText="Batal"
         icon="🔕"

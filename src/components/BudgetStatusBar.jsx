@@ -42,7 +42,7 @@ function BudgetStatusBar({
     }).format(val ?? 0);
 
   const statusColor = isSurplus ? "#2ecc71" : "#ff4757";
-  const statusLabel = isSurplus ? "Surplus" : "Deficit";
+  const statusLabel = isSurplus ? "Lebih" : "Kurang";
 
   return (
     <div
@@ -92,7 +92,7 @@ function BudgetStatusBar({
       <div className="budget-status-bar__details">
         <div className="budget-status-bar__detail">
           <span className="budget-status-bar__detail-label">
-            {isCarryOverSystem ? "Budget Efektif" : "Budget Harian"}
+            {isCarryOverSystem ? "Budget Hari Ini" : "Budget Harian"}
           </span>
           <span className="budget-status-bar__detail-value">
             {formatCurrency(shownBudget)}
