@@ -90,6 +90,7 @@ function DashboardPage() {
   }, [fetchData]);
 
   const totals = dashboard?.totals || {};
+  const monthly = dashboard?.monthly || {};
   const budgets = dashboard?.budgets || {};
   const budgetStatuses = budgets.status || [];
 
@@ -170,7 +171,7 @@ function DashboardPage() {
               >
                 <SummaryCard
                   icon={<BalanceIcon />}
-                  label="Saldo"
+                  label="Total Saldo"
                   amount={totals.balance}
                   color="#6c63ff"
                   delay={0}
@@ -178,14 +179,14 @@ function DashboardPage() {
                 <SummaryCard
                   icon={<IncomeIcon />}
                   label="Pemasukan"
-                  amount={totals.income}
+                  amount={monthly.income}
                   color="#2ecc71"
                   delay={1}
                 />
                 <SummaryCard
                   icon={<ExpenseIcon />}
                   label="Pengeluaran"
-                  amount={totals.expense}
+                  amount={monthly.expense}
                   color="#ff4757"
                   delay={2}
                 />
