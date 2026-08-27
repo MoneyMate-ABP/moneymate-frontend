@@ -6418,3 +6418,132 @@ hr { border: none; border-top: 2px solid var(--color-border); }
     gap: 6px;
   }
 }
+
+/* ── Report page ───────────────────────────────────────── */
+.report-period {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.report-period__select {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.report-period__select select {
+  background: var(--color-bg-elevated, #141414);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border);
+  border-radius: 0;
+  padding: 8px 12px;
+  font-family: var(--font-family);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+.report-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  .report-grid { grid-template-columns: 1fr; }
+}
+.report-section {
+  border: 2px solid var(--color-border);
+  border-radius: 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.01);
+  margin-bottom: 20px;
+}
+.report-section__title {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+.report-empty { color: var(--color-text-secondary); font-size: 0.82rem; }
+.report-bar-row { margin-bottom: 14px; }
+.report-bar-row__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+}
+.report-bar-row__name { font-weight: 700; }
+.report-bar-row__right { color: var(--color-text-secondary); }
+.report-bar-row__pct { font-family: var(--font-family); }
+.report-bar {
+  height: 12px;
+  background: #1a1a1a;
+  border: 1px solid var(--color-border);
+}
+.report-bar__fill { height: 100%; transition: width 0.3s; }
+.report-bar__fill.expense { background: var(--color-accent, #e61919); }
+.report-bar__fill.income { background: #5ddb9b; }
+.report-trend {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 160px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.report-trend__col {
+  flex: 1 0 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+.report-trend__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 100%;
+  width: 100%;
+}
+.report-trend__bar {
+  flex: 1;
+  min-width: 2px;
+  transition: height 0.3s;
+}
+.report-trend__bar.income { background: #5ddb9b; }
+.report-trend__bar.expense { background: var(--color-accent, #e61919); }
+.report-trend__day {
+  font-size: 0.58rem;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+/* Print styles — used for "Save as PDF" */
+@media print {
+  .sidebar, .bottom-nav, .app-navbar, .install-prompt-banner { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .page-container { max-width: 100% !important; padding: 0 !important; }
+  .report-section, .summary-card, .report-trend__bar { border-color: #000 !important; }
+  .report-bar__fill.expense, .report-trend__bar.expense { background: #000 !important; }
+  .report-bar__fill.income, .report-trend__bar.income { background: #555 !important; }
+  .report-bar { background: #ddd !important; }
+}
+
+/* ── Dashboard: top categories preview ─────────────────── */
+.dashboard-tops { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.dashboard-tops__row { padding: 12px; border: 1px solid var(--color-border); background: rgba(255,255,255,0.01); }
+.dashboard-tops__head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 0.82rem; }
+.dashboard-tops__name { font-weight: 700; }
+.dashboard-tops__value { color: var(--color-text-secondary); }
+.dashboard-tops__bar { height: 10px; background: #1a1a1a; border: 1px solid var(--color-border); }
+.dashboard-tops__fill { height: 100%; background: var(--color-accent, #e61919); }

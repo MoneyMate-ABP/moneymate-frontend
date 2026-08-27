@@ -7,6 +7,7 @@ import {
 } from "../../services/dashboardService";
 import SummaryCard from "../../components/SummaryCard";
 import TransactionCard from "../../components/TransactionCard";
+import TopCategoriesPreview from "../../components/dashboard/TopCategoriesPreview";
 import BudgetStatusBar from "../../components/BudgetStatusBar";
 
 /* ── SVG Icons ─────────────────────────────────────────── */
@@ -283,6 +284,7 @@ function DashboardPage() {
                 </div>
               )}
             </section>
+            <TopCategoriesPreview />
           </>
         )}
       </main>

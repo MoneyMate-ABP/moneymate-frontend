@@ -8,6 +8,7 @@ import {
   createTransaction,
   scanReceipt,
   scanMutation,
+  exportTransactionsCsv,
 } from "../../services/transactionService";
 import { getCategories } from "../../services/categoryService";
 import { getBudgetPeriods } from "../../services/budgetService";
@@ -435,6 +436,20 @@ function TransactionList() {
     setScanFiles([]);
     setScanMode("receipt");
     setScanUploadOpen(true);
+  };
+
+  // Export filtered transactions as CSV.
+  const handleExport = async () => {
+    try {
+      await exportTransactionsCsv({
+        from: filterDateFrom || undefined,
+        to: filterDateTo || undefined,
+        type: filterType === "all" ? undefined : filterType,
+      });
+      showToast("Data berhasil diekspor.", "success");
+    } catch {
+      showToast("Gagal mengekspor data.", "error");
+    }
   };
 
   useEffect(() => {
@@ -1018,6 +1033,15 @@ function TransactionList() {
               >
                 <ReceiptScanIcon />
                 <span>Scan Struk</span>
+              </button>
+              <button
+                className="btn tx-toolbar__scan"
+                onClick={handleExport}
+                id="export-csv-btn"
+                title="Ekspor transaksi ke CSV"
+              >
+                ⤓
+                <span>Export</span>
               </button>
               <Link
                 to="/transactions/add"

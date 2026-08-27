@@ -10,6 +10,25 @@ export async function getTransactions(params = {}) {
 }
 
 /**
+ * Download transactions as CSV using the current filters.
+ * @param {Object} params - { from, to, type }
+ */
+export async function exportTransactionsCsv(params = {}) {
+  const res = await api.get("/api/transactions/export", {
+    params,
+    responseType: "blob",
+  });
+  const url = window.URL.createObjectURL(new Blob([res.data]));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `moneymate-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}
+
+/**
  * Get a single transaction by ID
  */
 export async function getTransaction(id) {
