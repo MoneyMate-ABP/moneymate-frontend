@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getMonthlyReport } from "../../services/reportService";
+import { BalanceLineChart, DonutChart } from "../../components/charts/ReportCharts";
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("id-ID", {
@@ -147,23 +148,31 @@ function ReportPage() {
               {report.pengeluaran_per_kategori.length === 0 ? (
                 <p className="report-empty">Tidak ada pengeluaran bulan ini.</p>
               ) : (
-                report.pengeluaran_per_kategori.map((row) => (
-                  <div key={row.kategori} className="report-bar-row">
-                    <div className="report-bar-row__head">
-                      <span className="report-bar-row__name">{row.kategori}</span>
-                      <span className="report-bar-row__right">
-                        {formatCurrency(row.jumlah)}{" "}
-                        <span className="report-bar-row__pct">{row.persentase}%</span>
-                      </span>
-                    </div>
-                    <div className="report-bar">
-                      <div
-                        className="report-bar__fill expense"
-                        style={{ width: `${row.persentase}%` }}
-                      />
-                    </div>
+                <div className="report-with-donut">
+                  <DonutChart
+                    items={report.pengeluaran_per_kategori}
+                    total={report.total_expense}
+                  />
+                  <div className="report-with-donut__bars">
+                    {report.pengeluaran_per_kategori.map((row) => (
+                      <div key={row.kategori} className="report-bar-row">
+                        <div className="report-bar-row__head">
+                          <span className="report-bar-row__name">{row.kategori}</span>
+                          <span className="report-bar-row__right">
+                            {formatCurrency(row.jumlah)}{" "}
+                            <span className="report-bar-row__pct">{row.persentase}%</span>
+                          </span>
+                        </div>
+                        <div className="report-bar">
+                          <div
+                            className="report-bar__fill expense"
+                            style={{ width: `${row.persentase}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))
+                </div>
               )}
             </section>
 
@@ -199,19 +208,27 @@ function ReportPage() {
             <div className="report-trend">
               {Array.from({ length: allDays }, (_, i) => {
                 const day = String(i + 1).padStart(2, "0");
+                const num = i + 1;
                 const key = `${year}-${String(month).padStart(2, "0")}-${day}`;
                 const d = dailyMap[key] || { income: 0, expense: 0 };
+                const showLabel = num === 1 || num % 5 === 0 || num === allDays;
                 return (
                   <div key={key} className="report-trend__col" title={`${day} ${MONTHS[month - 1]}`}>
                     <div className="report-trend__bars">
-                      <div className="report-trend__bar income" style={{ height: d.income > 0 ? `${(d.income / (maxDaily || 1)) * 100}%` : "0%" }} />
-                      <div className="report-trend__bar expense" style={{ height: d.expense > 0 ? `${(d.expense / (maxDaily || 1)) * 100}%` : "0%" }} />
+                      <div className="report-trend__bar income" style={{ height: d.income > 0 ? `${Math.max((d.income / (maxDaily || 1)) * 100, 3)}%` : "0%" }} />
+                      <div className="report-trend__bar expense" style={{ height: d.expense > 0 ? `${Math.max((d.expense / (maxDaily || 1)) * 100, 3)}%` : "0%" }} />
                     </div>
-                    <span className="report-trend__day">{day}</span>
+                    {showLabel && <span className="report-trend__day">{day}</span>}
                   </div>
                 );
               })}
             </div>
+          </section>
+
+          {/* Running balance trend (linechart) */}
+          <section className="report-section">
+            <h2 className="report-section__title">TREN SALDO BERJALAN</h2>
+            <BalanceLineChart year={year} month={month} perHari={report.per_hari} />
           </section>
         </>
       )}

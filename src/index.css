@@ -6547,3 +6547,53 @@ hr { border: none; border-top: 2px solid var(--color-border); }
 .dashboard-tops__value { color: var(--color-text-secondary); }
 .dashboard-tops__bar { height: 10px; background: #1a1a1a; border: 1px solid var(--color-border); }
 .dashboard-tops__fill { height: 100%; background: var(--color-accent, #e61919); }
+
+/* ── Report charts (SVG) ───────────────────────────────── */
+.chart { display: flex; flex-direction: column; gap: 10px; }
+.chart__svg { width: 100%; height: auto; max-height: 200px; }
+.chart--donut { align-items: center; gap: 6px; }
+.chart--donut .chart__svg { max-width: 200px; }
+.chart__grid { stroke: rgba(255, 255, 255, 0.12); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.chart__line { stroke: var(--color-accent, #e61919); }
+.chart__donut-val { fill: var(--color-text-primary); font-family: var(--font-family); font-size: 16px; font-weight: 700; }
+.chart__donut-cap { fill: var(--color-text-secondary); font-family: var(--font-family); font-size: 8px; letter-spacing: 0.1em; }
+.chart__legend { display: flex; flex-wrap: wrap; gap: 10px 16px; font-size: 0.72rem; }
+.chart__legend-item { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text-secondary); font-family: var(--font-family); }
+.chart__legend-dot { width: 10px; height: 10px; flex: 0 0 10px; border: 1px solid var(--color-border); }
+.chart__legend-dot.income { background: var(--color-positive, #5ddb9b); }
+.chart__legend-dot.legend--line { background: var(--color-accent, #e61919); }
+
+/* Donut + bar list side by side */
+.report-with-donut { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: start; }
+.report-with-donut__bars { display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 768px) {
+  .report-with-donut { grid-template-columns: 1fr; justify-items: center; }
+}
+
+/* Print: readable charts */
+@media print {
+  .chart__grid { stroke: #999 !important; }
+  .chart__line { stroke: #000 !important; }
+  .chart__donut-val, .chart__donut-cap, .chart__legend-item { fill: #000 !important; color: #000 !important; }
+}
+
+/* Line chart keeps aspect ratio so labels stay readable; cap width on desktop */
+.chart__svg--line { width: 100%; max-width: 640px; height: auto; }
+.chart__y-label { fill: rgba(229, 229, 229, 0.85); font-family: var(--font-family); font-size: 9px; }
+.chart__x-axis {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 640px;
+  padding: 2px 0 0;
+  font-family: var(--font-family);
+  font-size: 9px;
+  color: rgba(229, 229, 229, 0.85);
+}
+.chart__x-label { font-family: var(--font-family); font-size: 9px; color: rgba(229, 229, 229, 0.85); }
+
+/* Period selector breathing room on small screens */
+@media (max-width: 480px) {
+  .report-period { gap: 6px; }
+  .report-period__select select { padding: 8px 6px; font-size: 0.75rem; }
+}
