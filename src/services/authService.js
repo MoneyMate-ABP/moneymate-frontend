@@ -205,6 +205,10 @@ export async function loginWithGoogle() {
   // Ensure stale redirect markers from previous versions do not trigger loop on login page.
   setRedirectPending(false);
 
+  if (!auth || !googleProvider) {
+    throw new Error("Google login is not configured.");
+  }
+
   const result = await signInWithPopup(auth, googleProvider);
   return exchangeGoogleTokenToBackend(result.user);
 }
@@ -214,6 +218,11 @@ export async function loginWithGoogle() {
  */
 export async function completeGoogleRedirectLogin() {
   if (!hasPendingGoogleRedirect()) return null;
+
+  if (!auth) {
+    setRedirectPending(false);
+    return null;
+  }
 
   if (!shouldUseRedirectFlow()) {
     setRedirectPending(false);

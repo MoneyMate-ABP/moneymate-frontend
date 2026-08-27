@@ -15,12 +15,24 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+// Google login is optional. If Firebase config is missing, skip Firebase
+// initialization entirely so the rest of the app can still mount and run.
+const isFirebaseConfigured = Boolean(
+  firebaseConfig.apiKey && firebaseConfig.projectId,
+);
 
-setPersistence(auth, browserLocalPersistence).catch(() => {
-  // Keep default persistence when browser blocks storage access.
-});
+let app = null;
+let auth = null;
+let googleProvider = null;
 
+if (isFirebaseConfigured) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  googleProvider = new GoogleAuthProvider();
+  setPersistence(auth, browserLocalPersistence).catch(() => {
+    // Keep default persistence when browser blocks storage access.
+  });
+}
+
+export { auth, googleProvider, isFirebaseConfigured };
 export default app;
